@@ -1,0 +1,33 @@
+{
+  "name": "aloetouch",
+  "version": "0.2.0",
+  "description": "JS library for touch event",
+  "main": "src/AloeTouch.js",
+  "scripts": {
+    "build": "webpack && webpack -p",
+    "watch": "webpack --watch",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/genbs/aloetouch.git"
+  },
+  "keywords": [
+    "JS",
+    "Library",
+    "javascript events",
+    "touch"
+  ],
+  "author": "Gennaro Bosone <gennaro.bs@gmail.com> (https://github.com/genbs)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/genbs/aloetouch/issues"
+  },
+  "homepage": "https://github.com/genbs/aloetouch#readme",
+  "devDependencies": {
+    "babel-core": "^6.23.1",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-loader": "^6.3.2",
+    "webpack": "^2.2.1"
+  }
+}
