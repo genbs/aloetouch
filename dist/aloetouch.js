@@ -88,12 +88,26 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 var AloeTouch = {
 
+    /**
+     * Contiene il numero di elementi
+     *
+     * @type {Number}
+     */
     length: 0,
 
+    /**
+     * Lista degli AloeTouchObject
+     *
+     * @type {Object}
+     */
     list: {},
 
     /**
      * Binda un nuovo elemento
+     *
+     * @param {DOMElement} element Elemento da bindare
+     * @param {Object}     events  Eventi da assegnare all'elemento
+     * @param {Boolean}    strict  Se settata, valida l'evento solo se il target del touch è l'elemento bindato
      */
     bind: function bind(element, events, strict) {
         var id = ++AloeTouch.length;
@@ -102,14 +116,21 @@ var AloeTouch = {
 
         ato = {
             el: ato.el,
+
             attach: ato.attach.bind(ato), // Binda un evento
             detach: ato.detach.bind(ato), // Rimuovo il listener di un evento
+
             setState: ato.setState.bind(ato), // Setta uno stato personalizzato
+            getState: ato.getState.bind(ato), // Setta uno stato personalizzato
             removeState: ato.removeState.bind(ato), // Rimuove uno state
             clearState: ato.clearState.bind(ato), // Azzera la variabile state
+
+            isLock: ato.isLock.bind(ato), // Rimuove i listener per tutti gli eventi
             lock: ato.lock.bind(ato), // Rimuove i listener per tutti gli eventi
             unlock: ato.unlock.bind(ato), // Rebinda i listener per gli eventii
-            id: id // id dell'oggetto
+
+            $ref: ato, // refrenza all'oggetto
+            $id: id // id dell'oggetto
         };
 
         return AloeTouch.list[id] = ato;
@@ -117,7 +138,24 @@ var AloeTouch = {
 
 
     /**
+     * Rimuove i listener ad un elemento
+     *
+     * @param {Numer or AloeTouchObject} aloetouchobject
+     */
+    unbind: function unbind(aloetouchobject) {
+        aloetouchobject = typeof aloetouchobject === 'number' ? AloeTouch.get(aloetouchobject.$id) : aloetouchobject;
+        var id = aloetouchobject.$id;
+
+        aloetouchobject.lock();
+        aloetouchobject.$ref = null;
+        delete AloeTouch.list[id];
+    },
+
+
+    /**
      * Ritorna un elemento in base al suo id
+     *
+     * @param {Number} id
      */
     get: function get(id) {
         return AloeTouch.list[id];
@@ -143,6 +181,8 @@ var AloeTouch = {
      * @param {Array<Number>} ids
      */
     lockExcept: function lockExcept(ids) {
+        ids = ids || [];
+
         AloeTouch.map(function (ato, id) {
             AloeTouch.list[id][ids.indexOf(id) == -1 ? 'unlock' : 'lock']();
         });
@@ -152,9 +192,11 @@ var AloeTouch = {
     /**
      * Blocca solo gli oggetti con id presente in ids
      *
-     * @param {Number?} id
+     * @param {Array<Number>} ids
      */
     lockOnly: function lockOnly(ids) {
+        ids = ids || [];
+
         AloeTouch.map(function (ato, id) {
             AloeTouch.list[id][ids.indexOf(id) >= 0 ? 'lock' : 'unlock']();
         });
@@ -177,7 +219,7 @@ var AloeTouch = {
     /**
      * Abilita gli eventi tranne agli elementi con id presente nell'array ids
      *
-     * @param {Number?} id
+     * @param {Array<Number>} ids
      */
     unlockExcept: function unlockExcept(ids) {
         AloeTouch.lockOnly(ids);
@@ -187,7 +229,7 @@ var AloeTouch = {
     /**
      * Abilita gli eventi solo agli elementi con id presente nell'array ids
      *
-     * @param {Number?} id
+     * @param {Array<Number>} ids
      */
     unlockOnly: function unlockOnly(ids) {
         AloeTouch.lockExcept(ids);
@@ -197,7 +239,7 @@ var AloeTouch = {
     /**
      * Mappa tutti li elementi bindati
      *
-     * @param {Callable(Object, id)}
+     * @param {Callable(AloeTouchObject, id)}
      */
     map: function map(callable) {
         Object.keys(AloeTouch.list).forEach(function (id) {
@@ -424,6 +466,12 @@ var AloeTouchObject = function () {
          *  Eventi
          * ------------------------------------- */
 
+        /**
+         * Ritorna vero se questo oggetto è bloccato, falso altrimenti
+         *
+         * @return {Boolean}
+         */
+
     }, {
         key: 'isLock',
         value: function isLock() {
@@ -466,6 +514,8 @@ var AloeTouchObject = function () {
 
         /**
          * Setta i valore dello state ed emette gli eventi
+         *
+         * @param {Object} eventValues Valori da emettere
          */
 
     }, {
@@ -480,6 +530,8 @@ var AloeTouchObject = function () {
 
         /**
          * Setta uno state
+         *
+         * @param {Object} state
          */
 
     }, {
@@ -493,12 +545,26 @@ var AloeTouchObject = function () {
         }
 
         /**
+         * Ritorna i valori dello state corrente
+         */
+
+    }, {
+        key: 'getState',
+        value: function getState() {
+            return this.stateValue;
+        }
+
+        /**
          * Rimuove uno state
+         *
+         * @param {String} name Nome dello state da rimuovere
          */
 
     }, {
         key: 'removeState',
         value: function removeState(name) {
+            this.state[name] = null;
+            this.stateValue[name] = null;
             delete this.state[name];
             delete this.stateValue[name];
         }
@@ -562,6 +628,7 @@ var AloeTouchObject = function () {
 
         /**
          * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+          * @param {Object} coords
          */
 
     }, {
@@ -572,6 +639,8 @@ var AloeTouchObject = function () {
 
         /**
          * L'evento pinch non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+         *
+         * @param {Number} distance
          */
 
     }, {
@@ -582,6 +651,8 @@ var AloeTouchObject = function () {
 
         /**
          * L'evento rotate non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+         *
+         * @param {Number} rotation
          */
 
     }, {
@@ -596,12 +667,15 @@ var AloeTouchObject = function () {
 
         /**
          * Emette un evento se settato
+         *
+         * @param {String} event Nome dell'evento da emettere
+         * @param {Object} data Dati da passare alla funzione settata per l'evento
          */
 
     }, {
         key: 'emit',
         value: function emit(event, data) {
-            this.events[event] && this.events[event](data, this.stateValue);
+            this.events[event] && this.events[event](data ? data : this.stateValue, data ? this.stateValue : null);
 
             return data;
         }

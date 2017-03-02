@@ -176,6 +176,11 @@ export default class AloeTouchObject {
      *  Eventi
      * ------------------------------------- */
 
+    /**
+     * Ritorna vero se questo oggetto è bloccato, falso altrimenti
+     *
+     * @return {Boolean}
+     */
     isLock() {
         return this.locked
     }
@@ -212,6 +217,8 @@ export default class AloeTouchObject {
 
     /**
      * Setta i valore dello state ed emette gli eventi
+     *
+     * @param {Object} eventValues Valori da emettere
      */
     setStateAndEmit(eventValues)
     {
@@ -224,6 +231,8 @@ export default class AloeTouchObject {
 
     /**
      * Setta uno state
+     *
+     * @param {Object} state
      */
     setState(state)
     {
@@ -232,12 +241,23 @@ export default class AloeTouchObject {
         })
     }
 
+    /**
+     * Ritorna i valori dello state corrente
+     */
+    getState()
+    {
+        return this.stateValue
+    }
 
     /**
      * Rimuove uno state
+     *
+     * @param {String} name Nome dello state da rimuovere
      */
     removeState(name)
     {
+        this.state[name] = null
+        this.stateValue[name] = null
         delete this.state[name]
         delete this.stateValue[name]
     }
@@ -295,6 +315,8 @@ export default class AloeTouchObject {
 
     /**
      * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+
+     * @param {Object} coords
      */
     pan(coords)
     {
@@ -303,6 +325,8 @@ export default class AloeTouchObject {
 
     /**
      * L'evento pinch non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+     *
+     * @param {Number} distance
      */
     pinch(distance)
     {
@@ -311,6 +335,8 @@ export default class AloeTouchObject {
 
     /**
      * L'evento rotate non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+     *
+     * @param {Number} rotation
      */
     rotate(rotation)
     {
@@ -323,10 +349,13 @@ export default class AloeTouchObject {
 
     /**
      * Emette un evento se settato
+     *
+     * @param {String} event Nome dell'evento da emettere
+     * @param {Object} data Dati da passare alla funzione settata per l'evento
      */
     emit(event, data)
     {
-        this.events[event] && this.events[event](data, this.stateValue)
+        this.events[event] && this.events[event](data ? data : this.stateValue, data ? this.stateValue : null)
 
         return data
     }

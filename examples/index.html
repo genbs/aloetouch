@@ -20,40 +20,46 @@
     <script src="../dist/aloetouch.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function()
-        {
+        document.addEventListener('DOMContentLoaded', function() {
             var touched = AloeTouch.bind('#image', {
-
                 touchmove: function(state) {
                     var transform = []
-                    transform.push(`translate(${ state.pan.x ? state.pan.x : 0 }px, ${ state.pan.y ? state.pan.y : 0 }px)`)
-                    transform.push(`scale(${ state.scale ? state.scale : 0 })`)
-                    transform.push(`rotate(${ state.rotate ? state.rotate : 0 }deg)`)
-
+                    transform.push(
+                        `translate(
+                          ${ state.pan.x || 0 }px,
+                          ${ state.pan.y || 0 }px
+                        )`
+                    )
+                    transform.push(
+                        `scale(${ state.scale || 1 })`
+                    )
+                    transform.push(
+                        `rotate(${ state.rotate || 0 }deg)`
+                    )
                     touched.el.style.transform = transform.join(' ')
                 },
-
-                touchend: function(){
-                    touched.el.classList.add('animate');
-                    touched.lock();
-
-                    window.setTimeout(function(){
-                        touched.el.style.transform = 'none';
-                        window.setTimeout(function(){
-                            touched.el.classList.remove('animate');
-                            touched.clearState();
-                            touched.unlock();
-                        }, 300);
-                    }, 33);
-                }
-
+                touchend: animate
             });
 
             touched.setState({
                 scale(state) {
                     return 1 + (state.pinch / 200)
                 }
-            })
+            });
+
+            function animate() {
+                touched.el.classList.add('animate');
+                touched.lock();
+
+                window.setTimeout(function() {
+                    touched.el.style.transform = 'none';
+                    window.setTimeout(function() {
+                        touched.el.classList.remove('animate');
+                        touched.clearState();
+                        touched.unlock();
+                    }, 300);
+                }, 33);
+            }
         });
     </script>
 </head>
