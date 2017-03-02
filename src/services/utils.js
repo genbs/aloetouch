@@ -142,7 +142,16 @@ let Utils = {
     distance(ATO)
     {
         let distance = Utils.diff(ATO.touches[0], ATO.touches[1])
-        return Math.sqrt( Math.pow(distance.x, 2) +  Math.pow(distance.y, 2) )
+        return Utils.scalar(distance.x, distance.y)
+    },
+
+    /**
+     * Distanza scalare
+     */
+    scalar(a, b, nosqrt)
+    {
+        let s = Math.pow(a, 2) +  Math.pow(b, 2)
+        return nosqrt === false ? s : Math.sqrt(s)
     },
 
     /**
@@ -153,7 +162,15 @@ let Utils = {
     direction(ATO)
     {
         let distance = Utils.diff(ATO.touches[0], ATO.touches[1])
-        return Math.atan2( distance.y, distance.x ) * 180 / Math.PI;
+        return Utils.angle(distance.x, distance.y)
+    },
+
+    /**
+     * Angolo
+     */
+    angle(a, b) 
+    {
+        return Math.atan2(b, a) * 180 / Math.PI
     },
 
     /**
@@ -176,7 +193,9 @@ export default {
     isHorizontal: Utils.isHorizontal,
     stringDirection: Utils.stringDirection,
     distanceBetween: Utils.distanceBetween,
-    distance: Utils.distance,
     direction: Utils.direction,
     rotation: Utils.rotation,
+
+    angle: Utils.angle,
+    scalar: Utils.scalar
 }

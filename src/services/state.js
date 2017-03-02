@@ -8,7 +8,8 @@ let State = {
         return {
             pan: { x: null, y: null },
             pinch: null,
-            rotate: null
+            rotate: null,
+            fingers: null
         }
     },
 
@@ -28,6 +29,7 @@ let State = {
      */
     set(state, event, customState)
     {
+        event.fingers && ( state.fingers = event.fingers )
         event.rotate && ( state.rotate = event.rotate + state.old.rotate )
         event.pinch && ( state.pinch = event.pinch + state.old.pinch )
         event.pan && event.pan.x && ( state.pan.x = event.pan.x + state.old.pan.x )

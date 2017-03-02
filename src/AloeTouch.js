@@ -29,44 +29,77 @@ let AloeTouch = {
     bind(element, events, strict)
     {
         let id = ++AloeTouch.length
-
         let ato = new AloeTouchObject(id, element, events, strict)
-
         ato = {
             el: ato.el,
+            rect: (() => AloeTouch.getRect(ato.el)),
 
-            attach: ato.attach.bind(ato),               // Binda un evento
-            detach: ato.detach.bind(ato),               // Rimuovo il listener di un evento
+            attach: AloeTouch.caller('attach'),               // Binda un evento
+            detach: AloeTouch.caller('detach'),               // Rimuovo il listener di un evento
 
-            setState: ato.setState.bind(ato),           // Setta uno stato personalizzato
-            getState: ato.getState.bind(ato),           // Setta uno stato personalizzato
-            removeState: ato.removeState.bind(ato),     // Rimuove uno state
-            clearState: ato.clearState.bind(ato),       // Azzera la variabile state
+            setState: AloeTouch.caller('setState'),           // Setta uno stato personalizzato
+            getState: AloeTouch.caller('getState'),           // Setta uno stato personalizzato
+            removeState: AloeTouch.caller('removeState'),     // Rimuove uno state
+            clearState: AloeTouch.caller('clearState'),       // Azzera la variabile state
 
-            isLock: ato.isLock.bind(ato),               // Rimuove i listener per tutti gli eventi
-            lock: ato.lock.bind(ato),                   // Rimuove i listener per tutti gli eventi
-            unlock: ato.unlock.bind(ato),               // Rebinda i listener per gli eventii
+            isLock: AloeTouch.caller('isLock'),               // Rimuove i listener per tutti gli eventi
+            lock: AloeTouch.caller('lock'),                   // Rimuove i listener per tutti gli eventi
+            unlock: AloeTouch.caller('unlock'),               // Rebinda i listener per gli eventii
 
-            $ref: ato,                                  // refrenza all'oggetto
-            $id: id                                     // id dell'oggetto
+            $ref: ato,                                         // refrenza all'oggetto
+            $id: id                                            // id dell'oggetto
         }
 
         return ( AloeTouch.list[id] = ato )
     },
 
     /**
+     * Chiama una funzione bindando il riferimento dell'oggetto chimante
+     * @param  {String} fn
+     * @return {Function}
+     */
+    caller(fn)
+    {
+        return function(data) {
+            this.$ref && this.$ref[fn](data)
+        }
+    },
+
+    /**
      * Rimuove i listener ad un elemento
      *
      * @param {Numer or AloeTouchObject} aloetouchobject
+     * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
      */
     unbind(aloetouchobject)
     {
-        aloetouchobject = typeof aloetouchobject === 'number' ? AloeTouch.get(aloetouchobject.$id) : aloetouchobject
-        let id = aloetouchobject.$id
+        let id
+        if(typeof aloetouchobject === 'number') {
+            aloetouchobject = AloeTouch.get(id)
+            id = aloetouchobject ? aloetouchobject.$id : null
+        } else {
+            id = aloetouchobject.$ref && AloeTouch.get(aloetouchobject.$id) ? aloetouchobject.$id : null
+        }
 
-        aloetouchobject.lock()
-        aloetouchobject.$ref = null
-        delete AloeTouch.list[id]
+        if(id) {
+            aloetouchobject.lock()
+            aloetouchobject.$ref = null
+            delete AloeTouch.list[id]
+            return true
+        }
+
+        return false
+    },
+
+    /**
+     * Ritorna le grandezze dell'elemento relativa alla viewport
+     *
+     * @param {DOMElement} element
+     * @return {Object}
+     */
+    getRect(element)
+    {
+        return element.getBoundingClientRect()
     },
 
     /**
@@ -76,7 +109,7 @@ let AloeTouch = {
      */
     get(id)
     {
-        return AloeTouch.list[id]
+        return AloeTouch.list.hasOwnProperty(id) ? AloeTouch.list[id] : null
     },
 
     /**

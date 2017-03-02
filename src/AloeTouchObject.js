@@ -42,7 +42,7 @@ export default class AloeTouchObject {
         this.id = id
         this.el = typeof element === 'string' ? document.querySelector(element) : element
         this.events = events || {}
-        this.strictMode = strict || true
+        this.strictMode = strict || false
         this.events.state = this.events.state || {}
         this.locked = true
 
@@ -73,7 +73,7 @@ export default class AloeTouchObject {
             // Binderà l'evento press solo se non sarà invocato nè l'evento move, nè finish
             !this.started.updated && ( this.pressEmitted = window.setTimeout(this.press.bind(this), ALOETOUCH_PRESS_MIN_TIME) )
 
-            this.emit('touchstart')
+            this.emit('start')
         }
     }
 
@@ -130,16 +130,32 @@ export default class AloeTouchObject {
             pan = null, pinch = null, rotate = null
 
         if(howManyTouches == 1) {
-            pan = this.utils.coords(this.started, this.ended)
+            pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 1 })
         } else if(howManyTouches == 2) {
-            pan = this.utils.coords(this.started, this.ended),
+            pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 2 }),
             pinch = this.utils.distanceBetween(this.started, this.ended),
             rotate = this.utils.rotation(this.started, this.ended)
         }
 
-        this.setStateAndEmit({ pan, pinch, rotate })
-        return this.emit('touchmove', this.stateValue)
+        this.setStateAndEmit({ pan, pinch, rotate, fingers: howManyTouches })
+        this.emit('move', this.stateValue)
     }
+
+    /**
+     * Setta i valore dello state ed emette gli eventi
+     *
+     * @param {Object} eventValues Valori da emettere
+     */
+    setStateAndEmit(eventValues, fingers)
+    {
+        this.stateValue = this.state.set(this.stateValue, eventValues, this.events.state)
+
+        fingers == 1 && eventValues.pan && this.pan(eventValues.pan)
+        fingers == 2 && eventValues.pan && this.pan2(eventValues.pan)
+        eventValues.pinch && this.pinch(eventValues.pinch)
+        eventValues.rotate && this.rotate(eventValues.rotate)
+    }
+
 
     /**
      * Termino l'evento
@@ -153,7 +169,7 @@ export default class AloeTouchObject {
 
             this.stateValue = this.state.refresh(this.stateValue, this.events.state) // aggiorno lo state
 
-            this.emit('touchend')
+            this.emit('end')
         }
 
         this.clear()
@@ -216,29 +232,13 @@ export default class AloeTouchObject {
      * ------------------------------------- */
 
     /**
-     * Setta i valore dello state ed emette gli eventi
-     *
-     * @param {Object} eventValues Valori da emettere
-     */
-    setStateAndEmit(eventValues)
-    {
-        this.stateValue = this.state.set(this.stateValue, eventValues, this.events.state)
-
-        eventValues.pan && this.pan(eventValues.pan, this.stateValue)
-        eventValues.pinch && this.pinch(eventValues.pinch, this.stateValue)
-        eventValues.rotate && this.rotate(eventValues.rotate, this.stateValue)
-    }
-
-    /**
      * Setta uno state
      *
      * @param {Object} state
      */
     setState(state)
     {
-        Object.keys(state).forEach( s => {
-            this.events.state[s] = state[s]
-        })
+        Object.keys(state).forEach( s => this.events.state[s] = state[s] )
     }
 
     /**
@@ -281,8 +281,7 @@ export default class AloeTouchObject {
     {
         let howManyTouches = this.utils.howManyTouches(this.ended)
         let time = Date.now() - this.started.time
-
-        if( howManyTouches == 1 && time < ALOETOUCH_PRESS_MIN_TIME )
+        if( howManyTouches < 2 && time < ALOETOUCH_PRESS_MIN_TIME )
             this.emit('tap')
     }
 
@@ -291,7 +290,7 @@ export default class AloeTouchObject {
      */
     press()
     {
-        if(this.pressEmitted) {
+        if(this.pressEmitted && !this.mooving) {
             this.emit('press', null)
             this.pressEmitted = null
         }
@@ -310,6 +309,7 @@ export default class AloeTouchObject {
 
             this.emit('swipe' + stringDirection.x, coords)
             this.emit('swipe' + stringDirection.y, coords)
+            this.emit('swipe', { directions: stringDirection, coords })
         }
     }
 
@@ -320,7 +320,17 @@ export default class AloeTouchObject {
      */
     pan(coords)
     {
-        return this.emit('pan', coords)
+        this.emit('pan', coords)
+    }
+
+    /**
+     * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+
+     * @param {Object} coords
+     */
+    pan2(coords)
+    {
+        this.emit('pan2', coords)
     }
 
     /**
@@ -330,7 +340,7 @@ export default class AloeTouchObject {
      */
     pinch(distance)
     {
-        return this.emit('pinch', distance)
+        this.emit('pinch', distance)
     }
 
     /**
@@ -340,7 +350,7 @@ export default class AloeTouchObject {
      */
     rotate(rotation)
     {
-        return this.emit('rotate', rotation)
+        this.emit('rotate', rotation)
     }
 
     /* -------------------------------------
@@ -355,17 +365,20 @@ export default class AloeTouchObject {
      */
     emit(event, data)
     {
-        this.events[event] && this.events[event](data ? data : this.stateValue, data ? this.stateValue : null)
+        if(this.events[event]) {
+            let result = this.events[event](data ? data : this.stateValue, data ? this.stateValue : null)
 
-        return data
+            // Prevengo la gestione degli altri eventi se - nella funzione settata dall'utente - viene restituito il booleano false
+            return result === false && this.clear()
+        }
     }
 
     /**
      * Aggiunge un evento
      */
-    attach(event, callable)
+    attach(events)
     {
-        this.events[event] = callable
+        Object.keys(events).forEach( e => this.events[e] = events[e] )
     }
     /**
      * Rimuove un evento

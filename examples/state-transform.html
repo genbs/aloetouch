@@ -22,7 +22,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var touched = AloeTouch.bind('#image', {
-                touchmove: function(state) {
+                move: function(state) {
                     var transform = []
                     transform.push(
                         `translate(
@@ -38,7 +38,7 @@
                     )
                     touched.el.style.transform = transform.join(' ')
                 },
-                touchend: animate
+                end: animate
             });
 
             touched.setState({
