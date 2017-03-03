@@ -383,9 +383,10 @@ export default class AloeTouchObject {
     /**
      * Rimuove un evento
      */
-    detach(event)
+    detach(events)
     {
-        this.events[event] && delete this.events[event]
+        events = events.constructor.name === 'Array' ? events : [events]
+        events.forEach(e => this.events[e] && delete this.events[e])
     }
 
     /**

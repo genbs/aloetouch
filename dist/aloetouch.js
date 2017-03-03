@@ -740,8 +740,13 @@ var AloeTouchObject = function () {
 
     }, {
         key: 'detach',
-        value: function detach(event) {
-            this.events[event] && delete this.events[event];
+        value: function detach(events) {
+            var _this4 = this;
+
+            events = events.constructor.name === 'Array' ? events : [events];
+            events.forEach(function (e) {
+                return _this4.events[e] && delete _this4.events[e];
+            });
         }
 
         /**
@@ -751,10 +756,10 @@ var AloeTouchObject = function () {
     }, {
         key: 'on',
         value: function on(events, handler, passive) {
-            var _this4 = this;
+            var _this5 = this;
 
             events.split(' ').forEach(function (e) {
-                return _this4.el.addEventListener(e, handler, passive ? { passive: true } : false);
+                return _this5.el.addEventListener(e, handler, passive ? { passive: true } : false);
             });
         }
 
@@ -765,10 +770,10 @@ var AloeTouchObject = function () {
     }, {
         key: 'off',
         value: function off(events, handler, passive) {
-            var _this5 = this;
+            var _this6 = this;
 
             events.split(' ').forEach(function (e) {
-                return _this5.el.removeEventListener(e, handler, passive ? { passive: true } : false);
+                return _this6.el.removeEventListener(e, handler, passive ? { passive: true } : false);
             });
         }
     }]);

@@ -78,10 +78,11 @@ import AloeTouch from 'aloetouch'
 * [Metodi di AloeTouch](#metodi-di-aloetouch)
 * [L'oggetto AloeTouchObject](#loggetto-aloetouchobject)
 * [Utilizzo degli State](#utilizzo-degli-state)
-* [Bloccare / Sbloccare un elemento](#bloccare-sbloccare-un-elemento)
 
 
 ## Bindare un elemento
+
+Aggiunge gli eventi tap e press all'elemento con id 'el'.
 
 ```js
 var ato = AloeTouch.bind('#el', {
@@ -146,18 +147,19 @@ Rimuove il binding di un elemento.
   * **Boolean** - *true* se l'oggetto è stato rimosso con successo, falso altrimenti.
 
 **Esempio**
+  ```js
+    var ato = AloeTouch.bind('#el', {
+      pan: function(coords) {
+        ato.$ref.el.style.transform = 'translate('+ coords.x +'px, '+ coords.y +'px)';
+      }
+    });
 
-```js
-var ato = AloeTouch.bind('#el', {
-  pan: function(coords) {
-    ato.$ref.el.style.transform = 'translate('+ coords.x +'px, '+ coords.y +'px)';
-  }
-});
-...
-window.setTimeout(function(){
-  AloeTouch.unbind(ato)
-}, 3000);
-```
+    ...
+
+    window.setTimeout(function(){
+      AloeTouch.unbind(ato)
+    }, 3000);
+  ```
 
 ---
 
@@ -190,7 +192,6 @@ Blocca lo stato di un elemento finché non verrà sbloccato.
 Blocca tutti gli [ATO](#loggetto-aloetouchobject) e sblocca quelli presenti nell'array `aloetouchobjects`.
 
 **Parametri**
-
   * `aloetouchobjects` - *Array di [ATO](#loggetto-aloetouchobject) o di id.*
 
 ---
@@ -200,7 +201,6 @@ Blocca tutti gli [ATO](#loggetto-aloetouchobject) e sblocca quelli presenti nell
 Blocca solo gli [ATO](#loggetto-aloetouchobject) presenti nell'array `aloetouchobjects` e sblocca tutti gli altri.
 
 **Parametri**
-
   * `aloetouchobjects` - *Array di [ATO](#loggetto-aloetouchobject) o di id.*
 
 ---
@@ -210,11 +210,9 @@ Blocca solo gli [ATO](#loggetto-aloetouchobject) presenti nell'array `aloetoucho
 Sblocca lo stato di un elemento.
 
 **Parametri**
-
   * `id` - *L'id dell'[ATO](#loggetto-aloetouchobject).*
 
 **Esempio**
-
   * [Lock/Unlock](blob/master/examples/lock-unlock.html).
 
 ---
@@ -224,7 +222,6 @@ Sblocca lo stato di un elemento.
 Sblocca tutti gli [ATO](#loggetto-aloetouchobject) e blocca quelli presenti nell'array `aloetouchobjects`.
 
 **Parametri**
-
   * `aloetouchobjects` - *Array di [ATO](#loggetto-aloetouchobject) o di id.*
 
 ---
@@ -234,12 +231,73 @@ Sblocca tutti gli [ATO](#loggetto-aloetouchobject) e blocca quelli presenti nell
 Sblocca solo gli [ATO](#loggetto-aloetouchobject) presenti nell'array `aloetouchobjects` e blocca tutti gli altri.
 
 **Parametri**
-
   * `aloetouchobjects` - *Array di [ATO](#loggetto-aloetouchobject) o di id.*
 
 ---
 
 ## L'oggetto AloeTouchObject
+
+Il metodo [bind](#aloetouchbindelement-events-strict) di AloeTouch resituisce un elemento di tipo `AloeTouchObject`.
+
+Le sue proprietà sono:
+ * `$id` *Id del nuovo oggetto*
+ * `$ref` *Riferimento all'oggetto principale*
+
+Lista dei metodi:
+ * [$id]()
+ * [attach]()
+ * [detach]()
+ * [setState]()
+ * [getState]()
+ * [removeState]()
+ * [clearState]()
+ * [isLock]()
+ * [lock]()
+ * [unlock]()
+
+### AloeTouchObject.attach(events)
+
+Aggiunge gli eventi.
+
+**Parametri**
+  * `events` - *Oggetto contentente i gestori*
+
+**Esempio**
+  ```js
+    var ato = AloeTouch.bind('#el')
+
+    ato.attach({
+      start: function(){
+        console.log('Inio movimento')
+      },
+      pan: function(coords){
+        ato.$ref.el.style.transform = 'translate('+ coords.x +'px, '+ coords.y +'px)'
+      }
+    })
+  ```
+
+### AloeTouchObject.detach(event)
+
+Aggiunge gli eventi.
+
+**Parametri**
+  * `event` - *Stringa o Array contentente il nome dell'evento*
+
+**Esempio**
+  ```js
+    var ato = AloeTouch.bind('#el')
+
+    ato.attach({
+      pan: function(coords){
+        ato.$ref.el.style.transform = 'translate('+ coords.x +'px, '+ coords.y +'px)'
+      },
+      press: function(){
+        ato.detach('pan')
+      }
+    })
+  ```
+
+---
 
 
 
