@@ -146,7 +146,7 @@ Rimuove il binding di un elemento.
 
 **Valore di ritorno**
 
-  **Boolean** - *true* se l'oggetto è stato rimosso con successo, falso altrimenti.
+  * **Boolean** - *true* se l'oggetto è stato rimosso con successo, falso altrimenti.
 
 **Esempio**
 ```js
@@ -172,7 +172,7 @@ Preleva un elemento dalla lista degli elementi bindati.
 
 **Valore di ritorno**
 
-  **[AloeTouchObject](#loggetto-aloetouchobject)**
+  * **[AloeTouchObject](#loggetto-aloetouchobject)**
 
 
 ### AloeTouch.lock(id)
