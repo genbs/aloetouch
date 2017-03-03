@@ -188,7 +188,7 @@ Blocca tutti gli [AloeTouchObject](#loggetto-aloetouchobject) e sblocca quelli p
 
   * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
 
-### AloeTouch.lockOnly(ids)
+### AloeTouch.lockOnly(aloetouchobjects)
 
 Blocca solo gli [AloeTouchObject](#loggetto-aloetouchobject) presenti in `aloetouchobjects` e sblocca tutti gli altri.
 
@@ -208,7 +208,7 @@ Sblocca lo stato di un elemento.
 
   * [Lock/Unlock](blob/master/examples/lock-unlock.html)).
 
-### AloeTouch.unlockExcept(ids)
+### AloeTouch.unlockExcept(aloetouchobjects)
 
 Sblocca tutti gli [AloeTouchObject](#loggetto-aloetouchobject) e blocca quelli presenti in `aloetouchobjects`.
 
@@ -216,7 +216,7 @@ Sblocca tutti gli [AloeTouchObject](#loggetto-aloetouchobject) e blocca quelli p
 
   * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
 
-### AloeTouch.unlockOnly(ids)
+### AloeTouch.unlockOnly(aloetouchobjects)
 
 Sblocca solo gli [AloeTouchObject](#loggetto-aloetouchobject) presenti in `aloetouchobjects` e blocca tutti gli altri.
 
