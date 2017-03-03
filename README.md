@@ -94,15 +94,15 @@ var ato = AloeTouch.bind('#el', {
 
 ## Metodi di AloeTouch
 
- * [bind](#aloeTouchbind-element-events-strict)
- * [unbind](#aloeTouchunbind-aloeTouchObject)
- * [get](#aloeTouchbind-id)
- * [lock](#aloeTouchbind-id)
- * [lockExcept](#aloeTouchbind-aloeTouchObjects)
- * [lockOnly](#aloeTouchbind-aloeTouchObjects)
- * [unlock](#aloeTouchbind-id)
- * [unlockExcept](#aloeTouchbind-aloeTouchObjects)
- * [unlockOnly](#aloeTouchbind-aloeTouchObjects)
+ * [bind](#aloetouchbindelement-events-strict)
+ * [unbind](#aloetouchunbindaloetouchobject)
+ * [get](#aloetouchgetid)
+ * [lock](#aloetouchlockid)
+ * [lockExcept](#aloetouchlockexceptaloetouchobjects)
+ * [lockOnly](#aloetouchlockonlyaloetouchobjects)
+ * [unlock](#aloetouchunlockid)
+ * [unlockExcept](#aloetouchunlockexceptaloetouchobjects)
+ * [unlockOnly](#aloetouchunlockonlyaloetouchobjects)
 
 ### AloeTouch.bind(element, events, strict)
 
@@ -131,13 +131,13 @@ var ato = AloeTouch.bind('#el', {
 });
 ```
 
-### AloeTouch.unbind(aloeTouchObject)
+### AloeTouch.unbind(aloetouchobject)
 
 Rimuove il binding di un elemento.
 
 **Parametri**
 
-  * `aloeTouchObject` - *L'[AloeTouchObject](#loggetto-aloetouchobject) (oppure l'id) da rimuovere.*
+  * `aloetouchobject` - *L'[AloeTouchObject](#loggetto-aloetouchobject) (oppure l'id) da rimuovere.*
 
 **Valore di ritorno**
 
