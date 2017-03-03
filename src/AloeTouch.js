@@ -29,28 +29,20 @@ let AloeTouch = {
     bind(element, events, strict)
     {
         let id = ++AloeTouch.length
-        let ato = new AloeTouchObject(id, element, events, strict)
-        ato = {
-            el: ato.el,
-            rect: (() => AloeTouch.getRect(ato.el)),
 
-            attach: AloeTouch.caller('attach'),               // Binda un evento
-            detach: AloeTouch.caller('detach'),               // Rimuovo il listener di un evento
-
-            setState: AloeTouch.caller('setState'),           // Setta uno stato personalizzato
-            getState: AloeTouch.caller('getState'),           // Setta uno stato personalizzato
-            removeState: AloeTouch.caller('removeState'),     // Rimuove uno state
-            clearState: AloeTouch.caller('clearState'),       // Azzera la variabile state
-
-            isLock: AloeTouch.caller('isLock'),               // Rimuove i listener per tutti gli eventi
-            lock: AloeTouch.caller('lock'),                   // Rimuove i listener per tutti gli eventi
-            unlock: AloeTouch.caller('unlock'),               // Rebinda i listener per gli eventii
-
-            $ref: ato,                                         // refrenza all'oggetto
-            $id: id                                            // id dell'oggetto
-        }
-
-        return ( AloeTouch.list[id] = ato )
+        return ( AloeTouch.list[id] = {
+                    $id: id,                              // id dell'oggetto
+                 attach: AloeTouch.caller('attach'),      // Binda un evento
+                 detach: AloeTouch.caller('detach'),      // Rimuovo il listener di un evento
+               setState: AloeTouch.caller('setState'),    // Setta uno stato personalizzato
+               getState: AloeTouch.caller('getState'),    // Setta uno stato personalizzato
+            removeState: AloeTouch.caller('removeState'), // Rimuove uno state
+             clearState: AloeTouch.caller('clearState'),  // Azzera la variabile state
+                 isLock: AloeTouch.caller('isLock'),      // Rimuove i listener per tutti gli eventi
+                   lock: AloeTouch.caller('lock'),        // Rimuove i listener per tutti gli eventi
+                 unlock: AloeTouch.caller('unlock'),      // Rebinda i listener per gli eventii
+                   $ref: new AloeTouchObject( id, element, events, strict )  // refrenza all'oggetto
+        } )
     },
 
     /**
@@ -68,38 +60,21 @@ let AloeTouch = {
     /**
      * Rimuove i listener ad un elemento
      *
-     * @param {Numer or AloeTouchObject} aloetouchobject
+     * @param {AloeTouchObject or Numer} aloetouchobject
      * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
      */
     unbind(aloetouchobject)
     {
         let id
-        if(typeof aloetouchobject === 'number') {
-            aloetouchobject = AloeTouch.get(id)
-            id = aloetouchobject ? aloetouchobject.$id : null
-        } else {
-            id = aloetouchobject.$ref && AloeTouch.get(aloetouchobject.$id) ? aloetouchobject.$id : null
-        }
 
-        if(id) {
-            aloetouchobject.lock()
-            aloetouchobject.$ref = null
-            delete AloeTouch.list[id]
-            return true
-        }
+        if(! (id = this.getIds(aloetouchobject, true)))
+            return false
 
-        return false
-    },
+        AloeTouch.list[id].lock()
+        AloeTouch.list[id].$ref = null
+        delete AloeTouch.list[id]
 
-    /**
-     * Ritorna le grandezze dell'elemento relativa alla viewport
-     *
-     * @param {DOMElement} element
-     * @return {Object}
-     */
-    getRect(element)
-    {
-        return element.getBoundingClientRect()
+        return true
     },
 
     /**
@@ -113,42 +88,54 @@ let AloeTouch = {
     },
 
     /**
+     * Ritorna un' array di id
+     *
+     * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+     * @param {Boolean} flag Ritorna un id se l'array ha lunghezza pari a uno
+     * @return {Array<Number> or Number}
+     */
+    getIds(aloetouchobjects, flag)
+    {
+        aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects]
+
+        aloetouchobjects.map( ato => typeof ato === 'number' ? ( AloeTouch.get(ato) ? ato : null ) : ( aloetouchobject.$ref ? aloetouchobject.$id : null ) )
+        aloetouchobjects = aloetouchobjects.filter(id => !!id)
+
+        return flag ? ( aloetouchobjects.length == 1 ? aloetouchobjects[0] : aloetouchobjects ) : aloetouchobjects
+    },
+
+    /**
      * Blocca un oggetto singolo o tutti
      *
-     * @param {Number?} id Blocca gli eventi per l'oggetto con id id
+     * @param {Number?} id Blocca gli eventi per l'oggetto con id 'id'
      */
     lock(id)
     {
-        id && ( AloeTouch.list[id].lock() )
-        !id && AloeTouch.map(ato => ato.lock() )
+        ( id && AloeTouch.list[id].lock() ) || ( !id && AloeTouch.map(ato => ato.lock()) )
     },
 
     /**
-     *  Blocca tutti gli oggetti tranne gli id presenti nell'array ids
+     *  Blocca tutti gli oggetti tranne quelli presenti nell'array aloetouchobjects
      *
-     * @param {Array<Number>} ids
+     * @param {Array<AloeTouchObject or Number>} aloetouchobjects
      */
-    lockExcept(ids)
+    lockExcept(aloetouchobjects)
     {
-        ids = ids || []
+        ids = this.getIds(ids) || []
 
-        AloeTouch.map((ato, id) => {
-            AloeTouch.list[id][ids.indexOf(id) == -1 ? 'unlock' : 'lock']()
-        })
+        AloeTouch.map((ato, id) => ato[ids.indexOf(id) == -1 ? 'unlock' : 'lock']())
     },
 
     /**
-     * Blocca solo gli oggetti con id presente in ids
+     * Blocca solo gli oggetti presenti in aloetouchobjects
      *
-     * @param {Array<Number>} ids
+     * @param {Array<AloeTouchObject or Number>} aloetouchobjects
      */
-    lockOnly(ids)
+    lockOnly(aloetouchobjects)
     {
-        ids = ids || []
+        ids = this.getIds(ids) || []
 
-        AloeTouch.map((ato, id) => {
-            AloeTouch.list[id][ids.indexOf(id) >= 0 ? 'lock' : 'unlock']()
-        })
+        AloeTouch.map((ato, id) => ato[ids.indexOf(id) >= 0 ? 'lock' : 'unlock']())
     },
 
     /**
@@ -158,28 +145,27 @@ let AloeTouch = {
      */
     unlock(id)
     {
-        id && ( AloeTouch.list[id].unlock() )
-        !id && AloeTouch.map(ato => ato.unlock() )
+        ( id && AloeTouch.list[id].unlock() ) || ( !id && AloeTouch.map(ato => ato.unlock()) )
     },
 
     /**
-     * Abilita gli eventi tranne agli elementi con id presente nell'array ids
+     * Abilita gli eventi tranne agli elementi presenti nell'array aloetouchobjects
      *
-     * @param {Array<Number>} ids
+     * @param {Array<AloeTouchObject or Number>} aloetouchobjects
      */
-    unlockExcept(ids)
+    unlockExcept(aloetouchobjects)
     {
-        AloeTouch.lockOnly(ids)
+        AloeTouch.lockOnly(aloetouchobjects)
     },
 
     /**
-     * Abilita gli eventi solo agli elementi con id presente nell'array ids
+     * Abilita gli eventi solo agli elementi presenti nell'array aloetouchobjects
      *
-     * @param {Array<Number>} ids
+     * @param {Array<AloeTouchObject or Number>} aloetouchobjects
      */
-    unlockOnly(ids)
+    unlockOnly(aloetouchobjects)
     {
-        AloeTouch.lockExcept(ids)
+        AloeTouch.lockExcept(aloetouchobjects)
     },
 
     /**

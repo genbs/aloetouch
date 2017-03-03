@@ -18,7 +18,7 @@ let Utils = {
     /**
      * Preleva la touchlist (modificata) dall'evento
      *
-     * @param  {Touclist}  touches [description]
+     * @param  {Touchlist}  touches [description]
      * @param  {DOMElement} element L'emento esiste solo se è settato STRICT
      * @return {Array}
      */
@@ -195,7 +195,6 @@ export default {
     distanceBetween: Utils.distanceBetween,
     direction: Utils.direction,
     rotation: Utils.rotation,
-
     angle: Utils.angle,
     scalar: Utils.scalar
 }

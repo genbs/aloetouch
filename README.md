@@ -14,10 +14,10 @@ Una modesta libreria per una modesta gestione degli eventi touch.
 
 # Sinossi
 
-Questa libreria è rivolta a chi vuol adattare la propria applicazione ad una user-experience moderna, 
-che vede come protagonisti indiscussi i dispositivi mobili. 
+Questa libreria è rivolta a chi vuol adattare la propria applicazione ad una user-experience moderna,
+che vede come protagonisti indiscussi i dispositivi mobili.
 
-Gli eventi gestiti sono principalmente: 
+Gli eventi gestiti sono principalmente:
 
 * Tap
 * Press
@@ -32,7 +32,7 @@ Gli eventi che definiscono il ciclo di vita implementato sono:
 * move
 * end
 
-Una particolarità è quella di non bloccare immediatamente lo scolling; 
+Una particolarità è quella di non bloccare immediatamente lo scolling;
 l'utente potrà scrollare sugli elementi bindati e la libreria cercherà di interpretare se la gesture deve prevenire o meno
 lo scrolling naturale dell'app.
 
@@ -78,7 +78,7 @@ import AloeTouch from 'aloetouch'
 * [Bloccare / Sbloccare un elemento](#bloccare-sbloccare-un-elemento)
 
 
-## Bindare un elemento 
+## Bindare un elemento
 
 ```js
 var ato = AloeTouch.bind('#el', {
@@ -98,11 +98,11 @@ var ato = AloeTouch.bind('#el', {
 
 **Parametri**
 
- * `element` - **String / DOMElement** - *Elemento a cui bindare gli eventi*.
- * `events` - **Object** - *Oggetto che contiene gli eventi da gestire e gli [state personalizzati]()*.
- * `strict` - **Boolean** - *Se settata a true, gli eventi verranno bindati solo se il target è l'elemento bindato*.
- 
-Il parametro `strict` è di default impostato a *false*. Questo valore deve essere impostato a *true* nel caso in cui
+ * `element` - *Elemento (o stringa) a cui bindare gli eventi.*
+ * `events` - *Oggetto che contiene gli eventi da gestire e gli [state personalizzati]().*
+ * `strict` - *Booleano che, se settata a true, binderà gli eventi bindati solo se il target è l'`element` stesso.*
+
+Il parametro `strict` è di default impostato a *false.* Questo valore deve essere impostato a *true* nel caso in cui
 si vogliano gestire più elementi in modo simultaneo (ad esempio [due eventi *pan*](blob/master/examples/multitouch.html)).
 
 **Valore di ritorno**
@@ -114,7 +114,7 @@ si vogliano gestire più elementi in modo simultaneo (ad esempio [due eventi *pa
 ```js
 var ato = AloeTouch.bind('#el', {
   rotate: function(gradi) {
-    ato.el.style.transform = 'rotate('+ gradi +'deg)'
+    ato.$ref.el.style.transform = 'rotate('+ gradi +'deg)'
   }
 });
 ```
@@ -123,7 +123,7 @@ var ato = AloeTouch.bind('#el', {
 
 **Parametri**
 
-  * `aloeTouchObject` - **[AloeTouchObject](#loggetto-aloetouchobject) / Number** - *Oggetto - oppure l'id - da rimuovere*. 
+  * `aloeTouchObject` - *L'[AloeTouchObject](#loggetto-aloetouchobject) (oppure l'id) da rimuovere.*
 
 **Valore di ritorno**
 
@@ -133,22 +133,81 @@ var ato = AloeTouch.bind('#el', {
 ```js
 var ato = AloeTouch.bind('#el', {
   pan: function(coords) {
-    ato.el.style.transform = 'translate('+ coords.x +'px, '+ coords.y +'px)';
-    
+    ato.$ref.el.style.transform = 'translate('+ coords.x +'px, '+ coords.y +'px)';
   }
 });
+...
+window.setTimeout(function(){
+  AloeTouch.unbind(ato)
+}, 3000);
 ```
 
-* unbind(`AloeTouchObject`)
-* get(`id`)
-* lock(`id`)
-* lockExcept(`ids`)
-* lockOnly(`ids`)
-* unlock(`id`)
-* unlockExcept(`ids`)
-* unlockOnly(`ids`)
+### AloeTouch.get(id)
 
-I parametri 
+Preleva un elemento dalla lista degli elementi bindati.
 
+**Parametri**
+
+  * `id` - *L'id dell'[AloeTouchObject](#loggetto-aloetouchobject).*
+
+**Valore di ritorno**
+
+  **[AloeTouchObject](#loggetto-aloetouchobject)**
+
+### AloeTouch.lock(id)
+
+Blocca lo stato di un elemento finché non verrà sbloccato.
+
+**Parametri**
+
+  * `id` - *L'id dell'[AloeTouchObject](#loggetto-aloetouchobject).*
+
+**Esempio**
+
+  * [Lock/Unlock](blob/master/examples/lock-unlock.html)).
+
+### AloeTouch.lockExcept(aloetouchobjects)
+
+Blocca tutti gli [AloeTouchObject](#loggetto-aloetouchobject) e sblocca quelli presenti in `aloetouchobjects`.
+
+**Parametri**
+
+  * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
+
+### AloeTouch.lockOnly(ids)
+
+Blocca solo gli [AloeTouchObject](#loggetto-aloetouchobject) presenti in `aloetouchobjects` e sblocca tutti gli altri.
+
+**Parametri**
+
+  * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
+
+### AloeTouch.unlock(id)
+
+Sblocca lo stato di un elemento.
+
+**Parametri**
+
+  * `id` - *L'id dell'[AloeTouchObject](#loggetto-aloetouchobject).*
+
+**Esempio**
+
+  * [Lock/Unlock](blob/master/examples/lock-unlock.html)).
+
+### AloeTouch.unlockExcept(ids)
+
+Sblocca tutti gli [AloeTouchObject](#loggetto-aloetouchobject) e blocca quelli presenti in `aloetouchobjects`.
+
+**Parametri**
+
+  * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
+
+### AloeTouch.unlockOnly(ids)
+
+Sblocca solo gli [AloeTouchObject](#loggetto-aloetouchobject) presenti in `aloetouchobjects` e blocca tutti gli altri.
+
+**Parametri**
+
+  * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
 
 # Integrazione

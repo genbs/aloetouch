@@ -126,18 +126,18 @@ export default class AloeTouchObject {
      */
     dispatch()
     {
-        let howManyTouches = this.utils.howManyTouches(this.ended),
+        let fingers = this.utils.howManyTouches(this.ended),
             pan = null, pinch = null, rotate = null
 
-        if(howManyTouches == 1) {
+        if(fingers == 1) {
             pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 1 })
-        } else if(howManyTouches == 2) {
+        } else if(fingers == 2) {
             pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 2 }),
             pinch = this.utils.distanceBetween(this.started, this.ended),
             rotate = this.utils.rotation(this.started, this.ended)
         }
 
-        this.setStateAndEmit({ pan, pinch, rotate, fingers: howManyTouches })
+        this.setStateAndEmit({ pan, pinch, rotate, fingers })
         this.emit('move', this.stateValue)
     }
 
@@ -279,9 +279,9 @@ export default class AloeTouchObject {
      */
     tap()
     {
-        let howManyTouches = this.utils.howManyTouches(this.ended)
+        let fingers = this.utils.howManyTouches(this.ended)
         let time = Date.now() - this.started.time
-        if( howManyTouches < 2 && time < ALOETOUCH_PRESS_MIN_TIME )
+        if( fingers < 2 && time < ALOETOUCH_PRESS_MIN_TIME )
             this.emit('tap')
     }
 
@@ -401,7 +401,7 @@ export default class AloeTouchObject {
      */
     off(events, handler, passive)
     {
-        events.split(' ').forEach(e => this.el.removeEventListener(e, handler, passive ? { passive: true } : false))
+        events.split(' ').forEach( e => this.el.removeEventListener(e, handler, passive ? { passive: true } : false) )
     }
 }
 

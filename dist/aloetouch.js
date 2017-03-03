@@ -74,7 +74,7 @@
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 
 var _AloeTouchObject = __webpack_require__(1);
@@ -88,199 +88,190 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 var AloeTouch = {
 
-    /**
-     * Contiene il numero di elementi
-     *
-     * @type {Number}
-     */
-    length: 0,
+  /**
+   * Contiene il numero di elementi
+   *
+   * @type {Number}
+   */
+  length: 0,
 
-    /**
-     * Lista degli AloeTouchObject
-     *
-     * @type {Object}
-     */
-    list: {},
+  /**
+   * Lista degli AloeTouchObject
+   *
+   * @type {Object}
+   */
+  list: {},
 
-    /**
-     * Binda un nuovo elemento
-     *
-     * @param {DOMElement} element Elemento da bindare
-     * @param {Object}     events  Eventi da assegnare all'elemento
-     * @param {Boolean}    strict  Se settata, valida l'evento solo se il target del touch è l'elemento bindato
-     */
-    bind: function bind(element, events, strict) {
-        var id = ++AloeTouch.length;
-        var ato = new _AloeTouchObject2.default(id, element, events, strict);
-        ato = {
-            el: ato.el,
-            rect: function rect() {
-                return AloeTouch.getRect(ato.el);
-            },
+  /**
+   * Binda un nuovo elemento
+   *
+   * @param {DOMElement} element Elemento da bindare
+   * @param {Object}     events  Eventi da assegnare all'elemento
+   * @param {Boolean}    strict  Se settata, valida l'evento solo se il target del touch è l'elemento bindato
+   */
+  bind: function bind(element, events, strict) {
+    var id = ++AloeTouch.length;
 
-            attach: AloeTouch.caller('attach'), // Binda un evento
-            detach: AloeTouch.caller('detach'), // Rimuovo il listener di un evento
-
-            setState: AloeTouch.caller('setState'), // Setta uno stato personalizzato
-            getState: AloeTouch.caller('getState'), // Setta uno stato personalizzato
-            removeState: AloeTouch.caller('removeState'), // Rimuove uno state
-            clearState: AloeTouch.caller('clearState'), // Azzera la variabile state
-
-            isLock: AloeTouch.caller('isLock'), // Rimuove i listener per tutti gli eventi
-            lock: AloeTouch.caller('lock'), // Rimuove i listener per tutti gli eventi
-            unlock: AloeTouch.caller('unlock'), // Rebinda i listener per gli eventii
-
-            $ref: ato, // refrenza all'oggetto
-            $id: id // id dell'oggetto
-        };
-
-        return AloeTouch.list[id] = ato;
-    },
+    return AloeTouch.list[id] = {
+      $id: id, // id dell'oggetto
+      attach: AloeTouch.caller('attach'), // Binda un evento
+      detach: AloeTouch.caller('detach'), // Rimuovo il listener di un evento
+      setState: AloeTouch.caller('setState'), // Setta uno stato personalizzato
+      getState: AloeTouch.caller('getState'), // Setta uno stato personalizzato
+      removeState: AloeTouch.caller('removeState'), // Rimuove uno state
+      clearState: AloeTouch.caller('clearState'), // Azzera la variabile state
+      isLock: AloeTouch.caller('isLock'), // Rimuove i listener per tutti gli eventi
+      lock: AloeTouch.caller('lock'), // Rimuove i listener per tutti gli eventi
+      unlock: AloeTouch.caller('unlock'), // Rebinda i listener per gli eventii
+      $ref: new _AloeTouchObject2.default(id, element, events, strict) // refrenza all'oggetto
+    };
+  },
 
 
-    /**
-     * Chiama una funzione bindando il riferimento dell'oggetto chimante
-     * @param  {String} fn
-     * @return {Function}
-     */
-    caller: function caller(fn) {
-        return function (data) {
-            this.$ref && this.$ref[fn](data);
-        };
-    },
+  /**
+   * Chiama una funzione bindando il riferimento dell'oggetto chimante
+   * @param  {String} fn
+   * @return {Function}
+   */
+  caller: function caller(fn) {
+    return function (data) {
+      this.$ref && this.$ref[fn](data);
+    };
+  },
 
 
-    /**
-     * Rimuove i listener ad un elemento
-     *
-     * @param {Numer or AloeTouchObject} aloetouchobject
-     * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
-     */
-    unbind: function unbind(aloetouchobject) {
-        var id = void 0;
-        if (typeof aloetouchobject === 'number') {
-            aloetouchobject = AloeTouch.get(id);
-            id = aloetouchobject ? aloetouchobject.$id : null;
-        } else {
-            id = aloetouchobject.$ref && AloeTouch.get(aloetouchobject.$id) ? aloetouchobject.$id : null;
-        }
+  /**
+   * Rimuove i listener ad un elemento
+   *
+   * @param {AloeTouchObject or Numer} aloetouchobject
+   * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
+   */
+  unbind: function unbind(aloetouchobject) {
+    var id = void 0;
 
-        if (id) {
-            aloetouchobject.lock();
-            aloetouchobject.$ref = null;
-            delete AloeTouch.list[id];
-            return true;
-        }
+    if (!(id = this.getIds(aloetouchobject, true))) return false;
 
-        return false;
-    },
+    AloeTouch.list[id].lock();
+    AloeTouch.list[id].$ref = null;
+    delete AloeTouch.list[id];
+
+    return true;
+  },
 
 
-    /**
-     * Ritorna le grandezze dell'elemento relativa alla viewport
-     *
-     * @param {DOMElement} element
-     * @return {Object}
-     */
-    getRect: function getRect(element) {
-        return element.getBoundingClientRect();
-    },
+  /**
+   * Ritorna un elemento in base al suo id
+   *
+   * @param {Number} id
+   */
+  get: function get(id) {
+    return AloeTouch.list.hasOwnProperty(id) ? AloeTouch.list[id] : null;
+  },
 
 
-    /**
-     * Ritorna un elemento in base al suo id
-     *
-     * @param {Number} id
-     */
-    get: function get(id) {
-        return AloeTouch.list.hasOwnProperty(id) ? AloeTouch.list[id] : null;
-    },
+  /**
+   * Ritorna un' array di id
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   * @param {Boolean} flag Ritorna un id se l'array ha lunghezza pari a uno
+   * @return {Array<Number> or Number}
+   */
+  getIds: function getIds(aloetouchobjects, flag) {
+    aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects];
+
+    aloetouchobjects.map(function (ato) {
+      return typeof ato === 'number' ? AloeTouch.get(ato) ? ato : null : aloetouchobject.$ref ? aloetouchobject.$id : null;
+    });
+    aloetouchobjects = aloetouchobjects.filter(function (id) {
+      return !!id;
+    });
+
+    return flag ? aloetouchobjects.length == 1 ? aloetouchobjects[0] : aloetouchobjects : aloetouchobjects;
+  },
 
 
-    /**
-     * Blocca un oggetto singolo o tutti
-     *
-     * @param {Number?} id Blocca gli eventi per l'oggetto con id id
-     */
-    lock: function lock(id) {
-        id && AloeTouch.list[id].lock();
-        !id && AloeTouch.map(function (ato) {
-            return ato.lock();
-        });
-    },
+  /**
+   * Blocca un oggetto singolo o tutti
+   *
+   * @param {Number?} id Blocca gli eventi per l'oggetto con id 'id'
+   */
+  lock: function lock(id) {
+    id && AloeTouch.list[id].lock() || !id && AloeTouch.map(function (ato) {
+      return ato.lock();
+    });
+  },
 
 
-    /**
-     *  Blocca tutti gli oggetti tranne gli id presenti nell'array ids
-     *
-     * @param {Array<Number>} ids
-     */
-    lockExcept: function lockExcept(ids) {
-        ids = ids || [];
+  /**
+   *  Blocca tutti gli oggetti tranne quelli presenti nell'array aloetouchobjects
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   */
+  lockExcept: function lockExcept(aloetouchobjects) {
+    ids = this.getIds(ids) || [];
 
-        AloeTouch.map(function (ato, id) {
-            AloeTouch.list[id][ids.indexOf(id) == -1 ? 'unlock' : 'lock']();
-        });
-    },
-
-
-    /**
-     * Blocca solo gli oggetti con id presente in ids
-     *
-     * @param {Array<Number>} ids
-     */
-    lockOnly: function lockOnly(ids) {
-        ids = ids || [];
-
-        AloeTouch.map(function (ato, id) {
-            AloeTouch.list[id][ids.indexOf(id) >= 0 ? 'lock' : 'unlock']();
-        });
-    },
+    AloeTouch.map(function (ato, id) {
+      return ato[ids.indexOf(id) == -1 ? 'unlock' : 'lock']();
+    });
+  },
 
 
-    /**
-     * Abilita li eventi ad un oggetto singolo o tutti
-     *
-     * @param {Number?} id
-     */
-    unlock: function unlock(id) {
-        id && AloeTouch.list[id].unlock();
-        !id && AloeTouch.map(function (ato) {
-            return ato.unlock();
-        });
-    },
+  /**
+   * Blocca solo gli oggetti presenti in aloetouchobjects
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   */
+  lockOnly: function lockOnly(aloetouchobjects) {
+    ids = this.getIds(ids) || [];
+
+    AloeTouch.map(function (ato, id) {
+      return ato[ids.indexOf(id) >= 0 ? 'lock' : 'unlock']();
+    });
+  },
 
 
-    /**
-     * Abilita gli eventi tranne agli elementi con id presente nell'array ids
-     *
-     * @param {Array<Number>} ids
-     */
-    unlockExcept: function unlockExcept(ids) {
-        AloeTouch.lockOnly(ids);
-    },
+  /**
+   * Abilita li eventi ad un oggetto singolo o tutti
+   *
+   * @param {Number?} id
+   */
+  unlock: function unlock(id) {
+    id && AloeTouch.list[id].unlock() || !id && AloeTouch.map(function (ato) {
+      return ato.unlock();
+    });
+  },
 
 
-    /**
-     * Abilita gli eventi solo agli elementi con id presente nell'array ids
-     *
-     * @param {Array<Number>} ids
-     */
-    unlockOnly: function unlockOnly(ids) {
-        AloeTouch.lockExcept(ids);
-    },
+  /**
+   * Abilita gli eventi tranne agli elementi presenti nell'array aloetouchobjects
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   */
+  unlockExcept: function unlockExcept(aloetouchobjects) {
+    AloeTouch.lockOnly(aloetouchobjects);
+  },
 
 
-    /**
-     * Mappa tutti li elementi bindati
-     *
-     * @param {Callable(AloeTouchObject, id)}
-     */
-    map: function map(callable) {
-        Object.keys(AloeTouch.list).forEach(function (id) {
-            return callable(AloeTouch.list[id], id);
-        });
-    }
+  /**
+   * Abilita gli eventi solo agli elementi presenti nell'array aloetouchobjects
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   */
+  unlockOnly: function unlockOnly(aloetouchobjects) {
+    AloeTouch.lockExcept(aloetouchobjects);
+  },
+
+
+  /**
+   * Mappa tutti li elementi bindati
+   *
+   * @param {Callable(AloeTouchObject, id)}
+   */
+  map: function map(callable) {
+    Object.keys(AloeTouch.list).forEach(function (id) {
+      return callable(AloeTouch.list[id], id);
+    });
+  }
 };
 
 exports.default = AloeTouch;
@@ -447,18 +438,18 @@ var AloeTouchObject = function () {
     }, {
         key: 'dispatch',
         value: function dispatch() {
-            var howManyTouches = this.utils.howManyTouches(this.ended),
+            var fingers = this.utils.howManyTouches(this.ended),
                 pan = null,
                 pinch = null,
                 rotate = null;
 
-            if (howManyTouches == 1) {
+            if (fingers == 1) {
                 pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 1 });
-            } else if (howManyTouches == 2) {
+            } else if (fingers == 2) {
                 pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 2 }), pinch = this.utils.distanceBetween(this.started, this.ended), rotate = this.utils.rotation(this.started, this.ended);
             }
 
-            this.setStateAndEmit({ pan: pan, pinch: pinch, rotate: rotate, fingers: howManyTouches });
+            this.setStateAndEmit({ pan: pan, pinch: pinch, rotate: rotate, fingers: fingers });
             this.emit('move', this.stateValue);
         }
 
@@ -626,9 +617,9 @@ var AloeTouchObject = function () {
     }, {
         key: 'tap',
         value: function tap() {
-            var howManyTouches = this.utils.howManyTouches(this.ended);
+            var fingers = this.utils.howManyTouches(this.ended);
             var time = Date.now() - this.started.time;
-            if (howManyTouches < 2 && time < ALOETOUCH_PRESS_MIN_TIME) this.emit('tap');
+            if (fingers < 2 && time < ALOETOUCH_PRESS_MIN_TIME) this.emit('tap');
         }
 
         /**
@@ -905,7 +896,7 @@ var Utils = {
     /**
      * Preleva la touchlist (modificata) dall'evento
      *
-     * @param  {Touclist}  touches [description]
+     * @param  {Touchlist}  touches [description]
      * @param  {DOMElement} element L'emento esiste solo se è settato STRICT
      * @return {Array}
      */
@@ -1081,7 +1072,6 @@ exports.default = {
     distanceBetween: Utils.distanceBetween,
     direction: Utils.direction,
     rotation: Utils.rotation,
-
     angle: Utils.angle,
     scalar: Utils.scalar
 };
