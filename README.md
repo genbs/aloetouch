@@ -12,6 +12,8 @@ Una modesta libreria per una modesta gestione degli eventi touch.
 * [Utilizzo](#utilizzo)
 * [Integrazione](#integrazione)
 
+
+
 # Sinossi
 
 Questa libreria è rivolta a chi vuol adattare la propria applicazione ad una user-experience moderna,
@@ -69,6 +71,7 @@ import AloeTouch from 'aloetouch'
 ```
 
 
+
 # Utilizzo
 
 * [Bindare un elemento](#bindare-un-elemento)
@@ -104,6 +107,7 @@ var ato = AloeTouch.bind('#el', {
  * [unlockExcept](#aloetouchunlockexceptaloetouchobjects)
  * [unlockOnly](#aloetouchunlockonlyaloetouchobjects)
 
+
 ### AloeTouch.bind(element, events, strict)
 
 Binda un elemento.
@@ -131,6 +135,7 @@ var ato = AloeTouch.bind('#el', {
 });
 ```
 
+
 ### AloeTouch.unbind(aloetouchobject)
 
 Rimuove il binding di un elemento.
@@ -156,6 +161,7 @@ window.setTimeout(function(){
 }, 3000);
 ```
 
+
 ### AloeTouch.get(id)
 
 Preleva un elemento dalla lista degli elementi bindati.
@@ -167,6 +173,7 @@ Preleva un elemento dalla lista degli elementi bindati.
 **Valore di ritorno**
 
   **[AloeTouchObject](#loggetto-aloetouchobject)**
+
 
 ### AloeTouch.lock(id)
 
@@ -180,21 +187,24 @@ Blocca lo stato di un elemento finché non verrà sbloccato.
 
   * [Lock/Unlock](blob/master/examples/lock-unlock.html)).
 
+
 ### AloeTouch.lockExcept(aloetouchobjects)
 
-Blocca tutti gli [AloeTouchObject](#loggetto-aloetouchobject) e sblocca quelli presenti in `aloetouchobjects`.
+Blocca tutti gli [AloeTouchObject](#loggetto-aloetouchobject) e sblocca quelli presenti nell'array `aloetouchobjects`.
 
 **Parametri**
 
   * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
+
 
 ### AloeTouch.lockOnly(aloetouchobjects)
 
-Blocca solo gli [AloeTouchObject](#loggetto-aloetouchobject) presenti in `aloetouchobjects` e sblocca tutti gli altri.
+Blocca solo gli [AloeTouchObject](#loggetto-aloetouchobject) presenti nell'array `aloetouchobjects` e sblocca tutti gli altri.
 
 **Parametri**
 
   * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
+
 
 ### AloeTouch.unlock(id)
 
@@ -208,20 +218,24 @@ Sblocca lo stato di un elemento.
 
   * [Lock/Unlock](blob/master/examples/lock-unlock.html)).
 
+
 ### AloeTouch.unlockExcept(aloetouchobjects)
 
-Sblocca tutti gli [AloeTouchObject](#loggetto-aloetouchobject) e blocca quelli presenti in `aloetouchobjects`.
+Sblocca tutti gli [AloeTouchObject](#loggetto-aloetouchobject) e blocca quelli presenti nell'array `aloetouchobjects`.
 
 **Parametri**
 
   * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
+
 
 ### AloeTouch.unlockOnly(aloetouchobjects)
 
-Sblocca solo gli [AloeTouchObject](#loggetto-aloetouchobject) presenti in `aloetouchobjects` e blocca tutti gli altri.
+Sblocca solo gli [AloeTouchObject](#loggetto-aloetouchobject) presenti nell'array `aloetouchobjects` e blocca tutti gli altri.
 
 **Parametri**
 
   * `aloetouchobjects` - *Array di [AloeTouchObject](#loggetto-aloetouchobject) o di id.*
+
+
 
 # Integrazione
