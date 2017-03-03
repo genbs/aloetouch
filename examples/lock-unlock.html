@@ -30,7 +30,7 @@
                 }
             });
 
-            ato.attach({
+            ato.$ref.attach({
                 press(){
                     console.log('press');
                 }
@@ -42,7 +42,7 @@
             }
 
             window.unlock = function() {
-                ato.unlock();
+                ato.$ref.unlock();
                 alert('L\'elemento è stato sbloccato')
             }
         });
