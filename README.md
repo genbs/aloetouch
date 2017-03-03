@@ -103,7 +103,7 @@ var ato = AloeTouch.bind('#el', {
  * `strict` - *Booleano che, se settata a true, binderà gli eventi bindati solo se il target è l'`element` stesso.*
 
 Il parametro `strict` è di default impostato a *false.* Questo valore deve essere impostato a *true* nel caso in cui
-si vogliano gestire più elementi in modo simultaneo (ad esempio [due eventi *pan*](./blob/master/examples/multitouch.html)).
+si vogliano gestire più elementi in modo simultaneo (ad esempio [due eventi *pan*](examples/multitouch.html)).
 
 **Valore di ritorno**
 
