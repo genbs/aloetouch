@@ -1,6 +1,6 @@
 {
   "name": "aloetouch",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "JS library for touch event",
   "main": "src/AloeTouch.js",
   "scripts": {

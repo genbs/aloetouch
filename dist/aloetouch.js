@@ -734,17 +734,17 @@ var AloeTouchObject = function () {
                 coords = this.utils.coords(this.started, this.ended);
                 directions = this.utils.stringDirection(coords);
             }
-            duration = this.ended.time - this.started.time;
+            duration = (this.ended.time - this.started.time) / 1000;
 
             return Object.assign({}, {
                 el: this.el,
                 coords: coords,
                 directions: directions,
-                /*velocity: {
-                    x: coords.x / duration * 1000,
-                    y: coords.y / duration * 1000,
-                    a: (this.utils.scalar(coords.x, coords.y) / duration ) * 1000
-                },*/
+                velocity: {
+                    x: coords.x / duration,
+                    y: coords.y / duration,
+                    d: this.utils.scalar(coords.x, coords.y) / duration
+                },
                 fingers: this.utils.howManyTouches(this.ended),
                 $state: this.stateValue,
                 $event: this.$event,
