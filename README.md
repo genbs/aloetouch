@@ -285,14 +285,14 @@ Aggiunge gli eventi.
 
 **Esempio**
   ```js
-    var ato = AloeTouch.bind('#el')
+    var ato = AloeTouch.bind('#el');
 
     ato.attach({
       pan: function(coords){
-        ato.$ref.el.style.transform = 'translate('+ coords.x +'px, '+ coords.y +'px)'
+        ato.$ref.el.style.transform = 'translate('+ coords.x +'px, '+ coords.y +'px)';
       },
       press: function(){
-        ato.detach('pan')
+        ato.detach('pan');
       }
     })
   ```

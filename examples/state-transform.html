@@ -22,23 +22,27 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var touched = AloeTouch.bind('#image', {
-                move: function(state) {
+                tap: function(e){
+                    console.log(e);
+                },
+                move: function(e) {
+                    console.log(e.velocity);
                     var transform = []
                     transform.push(
                         `translate(
-                          ${ state.pan.x || 0 }px,
-                          ${ state.pan.y || 0 }px
+                          ${ e.$state.pan.x || 0 }px,
+                          ${ e.$state.pan.y || 0 }px
                         )`
                     )
                     transform.push(
-                        `scale(${ state.scale || 1 })`
+                        `scale(${ e.$state.scale || 1 })`
                     )
                     transform.push(
-                        `rotate(${ state.rotate || 0 }deg)`
+                        `rotate(${ e.$state.rotate || 0 }deg)`
                     )
-                    touched.$ref.el.style.transform = transform.join(' ')
+                    e.el.style.transform = transform.join(' ')
                 },
-                end: animate
+                //end: animate
             });
 
             touched.setState({

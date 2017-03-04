@@ -10,7 +10,7 @@ let Utils = {
     {
         let ATO = oldATO ? Object.assign({}, oldATO, { updated: true }) : { time: Date.now() }
 
-        ATO.touches = Utils.getTouches(event.touches ? event.touches : [event], element)
+        ATO.touches = event && event.touches ? Utils.getTouches(event.touches, element) : [{ clientX: 0, clientY: 0 }]
 
         return ATO
     },
@@ -148,10 +148,9 @@ let Utils = {
     /**
      * Distanza scalare
      */
-    scalar(a, b, nosqrt)
+    scalar(a, b)
     {
-        let s = Math.pow(a, 2) +  Math.pow(b, 2)
-        return nosqrt === false ? s : Math.sqrt(s)
+        return Math.sqrt(Math.pow(a, 2) +  Math.pow(b, 2))
     },
 
     /**

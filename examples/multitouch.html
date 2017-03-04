@@ -17,25 +17,25 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var touched1 = AloeTouch.bind('#image-1', {
-                move: function(state) {
+                move: function(event) {
                     var transform = []
-                    transform.push(`translate(${ state.pan.x || 0 }px,${ state.pan.y || 0 }px)`)
-                    touched1.$ref.el.style.transform = transform.join(' ')
+                    transform.push(`translate(${ event.$state.pan.x || 0 }px,${ event.$state.pan.y || 0 }px)`)
+                    event.el.style.transform = transform.join(' ')
                 }
             }, true);
 
             var touched2 = AloeTouch.bind('#image-2', {
-                move: function(state) {
+                move: function(event) {
                     var transform = []
-                    transform.push(`translate(${ state.pan.x || 0 }px,${ state.pan.y || 0 }px)`)
+                    transform.push(`translate(${ event.$state.pan.x || 0 }px,${ event.$state.pan.y || 0 }px)`)
                     touched2.$ref.el.style.transform = transform.join(' ')
                 }
             }, true);
 
             var touched3 = AloeTouch.bind('#image-3', {
-                move: function(state) {
+                move: function(event) {
                     var transform = []
-                    transform.push(`translate(${ state.pan.x || 0 }px,${ state.pan.y || 0 }px)`)
+                    transform.push(`translate(${ event.$state.pan.x || 0 }px,${ event.$state.pan.y || 0 }px)`)
                     touched3.$ref.el.style.transform = transform.join(' ')
                 }
             }, true);

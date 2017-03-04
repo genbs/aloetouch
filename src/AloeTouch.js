@@ -65,16 +65,16 @@ let AloeTouch = {
      */
     unbind(aloetouchobject)
     {
-        let id
+        let id = this.getIds(aloetouchobject, true)
 
-        if(! (id = this.getIds(aloetouchobject, true)))
-            return false
+        if(id) {
+            AloeTouch.list[id].lock()
+            delete AloeTouch.list[id].$ref
+            delete AloeTouch.list[id]
+            return true
+        }
 
-        AloeTouch.list[id].lock()
-        AloeTouch.list[id].$ref = null
-        delete AloeTouch.list[id]
-
-        return true
+        return false
     },
 
     /**
@@ -97,8 +97,7 @@ let AloeTouch = {
     getIds(aloetouchobjects, flag)
     {
         aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects]
-
-        aloetouchobjects.map( ato => typeof ato === 'number' ? ( AloeTouch.get(ato) ? ato : null ) : ( aloetouchobject.$ref ? aloetouchobject.$id : null ) )
+        aloetouchobjects = aloetouchobjects.map( ato => typeof ato === 'number' ? ( AloeTouch.get(ato) ? ato : null ) : ( ato.$ref ? ato.$id : null ) )
         aloetouchobjects = aloetouchobjects.filter(id => !!id)
 
         return flag ? ( aloetouchobjects.length == 1 ? aloetouchobjects[0] : aloetouchobjects ) : aloetouchobjects
@@ -111,7 +110,7 @@ let AloeTouch = {
      */
     lock(id)
     {
-        ( id && AloeTouch.list[id].lock() ) || ( !id && AloeTouch.map(ato => ato.lock()) )
+        id ? AloeTouch.list[id].lock() : AloeTouch.map(ato => ato.lock())
     },
 
     /**
@@ -145,7 +144,7 @@ let AloeTouch = {
      */
     unlock(id)
     {
-        ( id && AloeTouch.list[id].unlock() ) || ( !id && AloeTouch.map(ato => ato.unlock()) )
+        id ? AloeTouch.list[id].unlock() : AloeTouch.map(ato => ato.unlock())
     },
 
     /**

@@ -50,9 +50,9 @@ export default class AloeTouchObject {
         this.utils = Utils
         this.state = State
 
-        this.__start = this.start.bind(this)
-        this.__move = this.move.bind(this)
-        this.__finish = this.finish.bind(this)
+        this.start = this.start.bind(this)
+        this.move = this.move.bind(this)
+        this.finish = this.finish.bind(this)
 
         this.clear()
         this.clearState()
@@ -66,13 +66,10 @@ export default class AloeTouchObject {
     start(event)
     {
         if(!this.locked) {
+            this.$event = event
             this.started = this.utils.create(event, this.strictMode ? this.el : null, this.started)
-
-            this.started.updated && ( this.mooving = true )
-
+            this.started.updated ?( this.mooving = true ) : ( this.pressEmitted = window.setTimeout(this.press.bind(this), ALOETOUCH_PRESS_MIN_TIME) )
             // Binderà l'evento press solo se non sarà invocato nè l'evento move, nè finish
-            !this.started.updated && ( this.pressEmitted = window.setTimeout(this.press.bind(this), ALOETOUCH_PRESS_MIN_TIME) )
-
             this.emit('start')
         }
     }
@@ -87,8 +84,7 @@ export default class AloeTouchObject {
             if(this.isPermissible())
             {
                 event.preventDefault()
-                event.stopPropagation()
-
+                this.$event = event
                 this.mooving = true
                 this.dispatch() // Smisto gli eventi 'mobili': pan, rotate, pitch
             } else {
@@ -102,8 +98,7 @@ export default class AloeTouchObject {
      */
     prepareMove(event, callback)
     {
-        this.started && callback.call( this, ( this.ended = this.utils.create(event, this.el) ) )
-        !this.started && this.clear()
+        this.started ? callback((this.ended = this.utils.create(event, this.strictMode ? this.el : null))) : this.clear()
     }
 
     /**
@@ -130,15 +125,15 @@ export default class AloeTouchObject {
             pan = null, pinch = null, rotate = null
 
         if(fingers == 1) {
-            pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 1 })
+            pan = this.utils.coords(this.started, this.ended)
         } else if(fingers == 2) {
-            pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 2 }),
-            pinch = this.utils.distanceBetween(this.started, this.ended),
+            pan = this.utils.coords(this.started, this.ended)
+            pinch = this.utils.distanceBetween(this.started, this.ended)
             rotate = this.utils.rotation(this.started, this.ended)
         }
 
-        this.setStateAndEmit({ pan, pinch, rotate, fingers })
-        this.emit('move', this.stateValue)
+        this.setStateAndEmit({ pan, pinch, rotate }, fingers)
+        this.emit('move')
     }
 
     /**
@@ -150,8 +145,8 @@ export default class AloeTouchObject {
     {
         this.stateValue = this.state.set(this.stateValue, eventValues, this.events.state)
 
-        fingers == 1 && eventValues.pan && this.pan(eventValues.pan)
-        fingers == 2 && eventValues.pan && this.pan2(eventValues.pan)
+        fingers == 1 && eventValues.pan && this.pan()
+        fingers == 2 && eventValues.pan && this.pan2()
         eventValues.pinch && this.pinch(eventValues.pinch)
         eventValues.rotate && this.rotate(eventValues.rotate)
     }
@@ -162,13 +157,12 @@ export default class AloeTouchObject {
      */
     finish(event)
     {
-        if(!this.locked && this.started)  // Controllo che vale anche per l'evento touchmove
+        if( !this.locked && this.started )  // Controllo che vale anche per l'evento touchmove
         {
+            this.$event = event
             this.mooving && this.swipe()
             this.mooving === null && this.tap()
-
             this.stateValue = this.state.refresh(this.stateValue, this.events.state) // aggiorno lo state
-
             this.emit('end')
         }
 
@@ -185,6 +179,7 @@ export default class AloeTouchObject {
         this.started = null
         this.ended = null
         this.mooving = null
+        this.$event = null
         this.pressEmitted = null
     }
 
@@ -206,10 +201,10 @@ export default class AloeTouchObject {
      */
     lock()
     {
-        if(!this.locked) {
-            this.off('touchstart', this.__start, true)
-            this.off('touchmove', this.__move)
-            this.off('touchend touchcancel', this.__finish, true)
+        if( !this.locked ) {
+            this.off('touchstart', this.start, true)
+            this.off('touchmove', this.move)
+            this.off('touchend touchcancel', this.finish, true)
             this.locked = true
         }
     }
@@ -219,10 +214,10 @@ export default class AloeTouchObject {
      */
     unlock()
     {
-        if(this.locked) {
-            this.on('touchstart', this.__start, true)
-            this.on('touchmove', this.__move)
-            this.on('touchend touchcancel', this.__finish, true)
+        if( this.locked ) {
+            this.on('touchstart', this.start, true)
+            this.on('touchmove', this.move)
+            this.on('touchend touchcancel', this.finish, true)
             this.locked = false
         }
     }
@@ -281,6 +276,7 @@ export default class AloeTouchObject {
     {
         let fingers = this.utils.howManyTouches(this.ended)
         let time = Date.now() - this.started.time
+
         if( fingers < 2 && time < ALOETOUCH_PRESS_MIN_TIME )
             this.emit('tap')
     }
@@ -291,7 +287,7 @@ export default class AloeTouchObject {
     press()
     {
         if(this.pressEmitted && !this.mooving) {
-            this.emit('press', null)
+            this.emit('press')
             this.pressEmitted = null
         }
     }
@@ -307,9 +303,9 @@ export default class AloeTouchObject {
         {
             let stringDirection = this.utils.stringDirection(coords)
 
-            this.emit('swipe' + stringDirection.x, coords)
-            this.emit('swipe' + stringDirection.y, coords)
-            this.emit('swipe', { directions: stringDirection, coords })
+            this.emit('swipe' + stringDirection.x)
+            this.emit('swipe' + stringDirection.y)
+            this.emit('swipe')
         }
     }
 
@@ -318,9 +314,9 @@ export default class AloeTouchObject {
 
      * @param {Object} coords
      */
-    pan(coords)
+    pan()
     {
-        this.emit('pan', coords)
+        this.emit('pan')
     }
 
     /**
@@ -328,9 +324,9 @@ export default class AloeTouchObject {
 
      * @param {Object} coords
      */
-    pan2(coords)
+    pan2()
     {
-        this.emit('pan2', coords)
+        this.emit('pan2')
     }
 
     /**
@@ -340,7 +336,7 @@ export default class AloeTouchObject {
      */
     pinch(distance)
     {
-        this.emit('pinch', distance)
+        this.emit('pinch', { distance })
     }
 
     /**
@@ -350,7 +346,7 @@ export default class AloeTouchObject {
      */
     rotate(rotation)
     {
-        this.emit('rotate', rotation)
+        this.emit('rotate', { rotation })
     }
 
     /* -------------------------------------
@@ -361,16 +357,47 @@ export default class AloeTouchObject {
      * Emette un evento se settato
      *
      * @param {String} event Nome dell'evento da emettere
-     * @param {Object} data Dati da passare alla funzione settata per l'evento
      */
     emit(event, data)
     {
         if(this.events[event]) {
-            let result = this.events[event](data ? data : this.stateValue, data ? this.stateValue : null)
+
+            //let result = this.events[event](data ? data : this.stateValue, data ? this.stateValue : null)
+            let result = this.events[event](this.setEventData(data))
 
             // Prevengo la gestione degli altri eventi se - nella funzione settata dall'utente - viene restituito il booleano false
             return result === false && this.clear()
         }
+    }
+
+    setEventData(data)
+    {
+        let coords, directions, duration
+
+        // Per l'evento tap e press
+        if( !this.ended ){
+            this.ended = this.utils.create(null)
+            coords = { x: this.started.touches[0].clientX, y: this.started.touches[0].clientY }
+        } else {
+            coords = this.utils.coords(this.started, this.ended)
+            directions = this.utils.stringDirection(coords)
+        }
+        duration = this.ended.time - this.started.time
+
+        return Object.assign({}, {
+            el: this.el,
+            coords,
+            directions,
+            /*velocity: {
+                x: coords.x / duration * 1000,
+                y: coords.y / duration * 1000,
+                a: (this.utils.scalar(coords.x, coords.y) / duration ) * 1000
+            },*/
+            fingers: this.utils.howManyTouches(this.ended),
+            $state: this.stateValue,
+            $event: this.$event,
+            duration
+        }, data)
     }
 
     /**

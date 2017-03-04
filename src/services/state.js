@@ -3,13 +3,12 @@ let State = {
     /**
      * Crea un oggetto vuoto per il contenimento dei valori degli eventi pan, pinch e rotate
      */
-    new()
+    init()
     {
         return {
             pan: { x: null, y: null },
             pinch: null,
-            rotate: null,
-            fingers: null
+            rotate: null
         }
     },
 
@@ -18,7 +17,7 @@ let State = {
      */
     create()
     {
-        return Object.assign({}, State.new(), { old: State.new() })
+        return Object.assign({}, State.init(), { $old: State.init() })
     },
 
     /**
@@ -29,11 +28,10 @@ let State = {
      */
     set(state, event, customState)
     {
-        event.fingers && ( state.fingers = event.fingers )
-        event.rotate && ( state.rotate = event.rotate + state.old.rotate )
-        event.pinch && ( state.pinch = event.pinch + state.old.pinch )
-        event.pan && event.pan.x && ( state.pan.x = event.pan.x + state.old.pan.x )
-        event.pan && event.pan.y && ( state.pan.y = event.pan.y + state.old.pan.y )
+        event.rotate && ( state.rotate = event.rotate + state.$old.rotate )
+        event.pinch && ( state.pinch = event.pinch + state.$old.pinch )
+        event.pan && event.pan.x && ( state.pan.x = event.pan.x + state.$old.pan.x )
+        event.pan && event.pan.y && ( state.pan.y = event.pan.y + state.$old.pan.y )
 
         // Aggiungo gli state settati dall'utente
         Object.keys(customState).forEach( cs => state[cs] = customState[cs](state) )
@@ -48,7 +46,7 @@ let State = {
      */
     refresh(state)
     {
-        state.old = State.copyState(state)
+        state.$old = State.copyState(state)
 
         return state
     },
@@ -60,7 +58,7 @@ let State = {
     {
         let n = {}
         Object.keys(state).forEach( k => {
-            k != 'old' && ( n[k] = typeof(state[k]) === 'object' && state[k] !== null ? State.copyState(state[k]) : state[k] )
+            k != '$old' && ( n[k] = typeof(state[k]) === 'object' && state[k] !== null ? State.copyState(state[k]) : state[k] )
         })
         return n
     }

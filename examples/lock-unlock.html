@@ -22,8 +22,8 @@
         document.addEventListener('DOMContentLoaded', function()
         {
             var ato = AloeTouch.bind('#image', {
-                move: function(state) {
-                    ato.$ref.el.style.transform = `translate(${ state.pan.x || 0 }px, ${ state.pan.y || 0 }px)`;
+                move: function(event) {
+                    event.el.style.transform = `translate(${ event.$state.pan.x || 0 }px, ${ event.$state.pan.y || 0 }px)`;
                 },
                 tap: function(){
                    console.log('tap');

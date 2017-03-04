@@ -147,15 +147,16 @@ var AloeTouch = {
    * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
    */
   unbind: function unbind(aloetouchobject) {
-    var id = void 0;
+    var id = this.getIds(aloetouchobject, true);
 
-    if (!(id = this.getIds(aloetouchobject, true))) return false;
+    if (id) {
+      AloeTouch.list[id].lock();
+      delete AloeTouch.list[id].$ref;
+      delete AloeTouch.list[id];
+      return true;
+    }
 
-    AloeTouch.list[id].lock();
-    AloeTouch.list[id].$ref = null;
-    delete AloeTouch.list[id];
-
-    return true;
+    return false;
   },
 
 
@@ -178,9 +179,8 @@ var AloeTouch = {
    */
   getIds: function getIds(aloetouchobjects, flag) {
     aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects];
-
-    aloetouchobjects.map(function (ato) {
-      return typeof ato === 'number' ? AloeTouch.get(ato) ? ato : null : aloetouchobject.$ref ? aloetouchobject.$id : null;
+    aloetouchobjects = aloetouchobjects.map(function (ato) {
+      return typeof ato === 'number' ? AloeTouch.get(ato) ? ato : null : ato.$ref ? ato.$id : null;
     });
     aloetouchobjects = aloetouchobjects.filter(function (id) {
       return !!id;
@@ -196,7 +196,7 @@ var AloeTouch = {
    * @param {Number?} id Blocca gli eventi per l'oggetto con id 'id'
    */
   lock: function lock(id) {
-    id && AloeTouch.list[id].lock() || !id && AloeTouch.map(function (ato) {
+    id ? AloeTouch.list[id].lock() : AloeTouch.map(function (ato) {
       return ato.lock();
     });
   },
@@ -236,7 +236,7 @@ var AloeTouch = {
    * @param {Number?} id
    */
   unlock: function unlock(id) {
-    id && AloeTouch.list[id].unlock() || !id && AloeTouch.map(function (ato) {
+    id ? AloeTouch.list[id].unlock() : AloeTouch.map(function (ato) {
       return ato.unlock();
     });
   },
@@ -352,9 +352,9 @@ var AloeTouchObject = function () {
         this.utils = _utils2.default;
         this.state = _state2.default;
 
-        this.__start = this.start.bind(this);
-        this.__move = this.move.bind(this);
-        this.__finish = this.finish.bind(this);
+        this.start = this.start.bind(this);
+        this.move = this.move.bind(this);
+        this.finish = this.finish.bind(this);
 
         this.clear();
         this.clearState();
@@ -370,13 +370,10 @@ var AloeTouchObject = function () {
         key: 'start',
         value: function start(event) {
             if (!this.locked) {
+                this.$event = event;
                 this.started = this.utils.create(event, this.strictMode ? this.el : null, this.started);
-
-                this.started.updated && (this.mooving = true);
-
+                this.started.updated ? this.mooving = true : this.pressEmitted = window.setTimeout(this.press.bind(this), ALOETOUCH_PRESS_MIN_TIME);
                 // Binderà l'evento press solo se non sarà invocato nè l'evento move, nè finish
-                !this.started.updated && (this.pressEmitted = window.setTimeout(this.press.bind(this), ALOETOUCH_PRESS_MIN_TIME));
-
                 this.emit('start');
             }
         }
@@ -394,8 +391,7 @@ var AloeTouchObject = function () {
             !this.locked && this.prepareMove(event, function (ended) {
                 if (_this.isPermissible()) {
                     event.preventDefault();
-                    event.stopPropagation();
-
+                    _this.$event = event;
                     _this.mooving = true;
                     _this.dispatch(); // Smisto gli eventi 'mobili': pan, rotate, pitch
                 } else {
@@ -411,8 +407,7 @@ var AloeTouchObject = function () {
     }, {
         key: 'prepareMove',
         value: function prepareMove(event, callback) {
-            this.started && callback.call(this, this.ended = this.utils.create(event, this.el));
-            !this.started && this.clear();
+            this.started ? callback(this.ended = this.utils.create(event, this.strictMode ? this.el : null)) : this.clear();
         }
 
         /**
@@ -444,13 +439,15 @@ var AloeTouchObject = function () {
                 rotate = null;
 
             if (fingers == 1) {
-                pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 1 });
+                pan = this.utils.coords(this.started, this.ended);
             } else if (fingers == 2) {
-                pan = Object.assign({}, this.utils.coords(this.started, this.ended), { fingers: 2 }), pinch = this.utils.distanceBetween(this.started, this.ended), rotate = this.utils.rotation(this.started, this.ended);
+                pan = this.utils.coords(this.started, this.ended);
+                pinch = this.utils.distanceBetween(this.started, this.ended);
+                rotate = this.utils.rotation(this.started, this.ended);
             }
 
-            this.setStateAndEmit({ pan: pan, pinch: pinch, rotate: rotate, fingers: fingers });
-            this.emit('move', this.stateValue);
+            this.setStateAndEmit({ pan: pan, pinch: pinch, rotate: rotate }, fingers);
+            this.emit('move');
         }
 
         /**
@@ -464,8 +461,8 @@ var AloeTouchObject = function () {
         value: function setStateAndEmit(eventValues, fingers) {
             this.stateValue = this.state.set(this.stateValue, eventValues, this.events.state);
 
-            fingers == 1 && eventValues.pan && this.pan(eventValues.pan);
-            fingers == 2 && eventValues.pan && this.pan2(eventValues.pan);
+            fingers == 1 && eventValues.pan && this.pan();
+            fingers == 2 && eventValues.pan && this.pan2();
             eventValues.pinch && this.pinch(eventValues.pinch);
             eventValues.rotate && this.rotate(eventValues.rotate);
         }
@@ -479,11 +476,10 @@ var AloeTouchObject = function () {
         value: function finish(event) {
             if (!this.locked && this.started) // Controllo che vale anche per l'evento touchmove
                 {
+                    this.$event = event;
                     this.mooving && this.swipe();
                     this.mooving === null && this.tap();
-
                     this.stateValue = this.state.refresh(this.stateValue, this.events.state); // aggiorno lo state
-
                     this.emit('end');
                 }
 
@@ -502,6 +498,7 @@ var AloeTouchObject = function () {
             this.started = null;
             this.ended = null;
             this.mooving = null;
+            this.$event = null;
             this.pressEmitted = null;
         }
 
@@ -529,9 +526,9 @@ var AloeTouchObject = function () {
         key: 'lock',
         value: function lock() {
             if (!this.locked) {
-                this.off('touchstart', this.__start, true);
-                this.off('touchmove', this.__move);
-                this.off('touchend touchcancel', this.__finish, true);
+                this.off('touchstart', this.start, true);
+                this.off('touchmove', this.move);
+                this.off('touchend touchcancel', this.finish, true);
                 this.locked = true;
             }
         }
@@ -544,9 +541,9 @@ var AloeTouchObject = function () {
         key: 'unlock',
         value: function unlock() {
             if (this.locked) {
-                this.on('touchstart', this.__start, true);
-                this.on('touchmove', this.__move);
-                this.on('touchend touchcancel', this.__finish, true);
+                this.on('touchstart', this.start, true);
+                this.on('touchmove', this.move);
+                this.on('touchend touchcancel', this.finish, true);
                 this.locked = false;
             }
         }
@@ -619,6 +616,7 @@ var AloeTouchObject = function () {
         value: function tap() {
             var fingers = this.utils.howManyTouches(this.ended);
             var time = Date.now() - this.started.time;
+
             if (fingers < 2 && time < ALOETOUCH_PRESS_MIN_TIME) this.emit('tap');
         }
 
@@ -630,7 +628,7 @@ var AloeTouchObject = function () {
         key: 'press',
         value: function press() {
             if (this.pressEmitted && !this.mooving) {
-                this.emit('press', null);
+                this.emit('press');
                 this.pressEmitted = null;
             }
         }
@@ -647,9 +645,9 @@ var AloeTouchObject = function () {
             if (Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE) {
                 var stringDirection = this.utils.stringDirection(coords);
 
-                this.emit('swipe' + stringDirection.x, coords);
-                this.emit('swipe' + stringDirection.y, coords);
-                this.emit('swipe', { directions: stringDirection, coords: coords });
+                this.emit('swipe' + stringDirection.x);
+                this.emit('swipe' + stringDirection.y);
+                this.emit('swipe');
             }
         }
 
@@ -660,8 +658,8 @@ var AloeTouchObject = function () {
 
     }, {
         key: 'pan',
-        value: function pan(coords) {
-            this.emit('pan', coords);
+        value: function pan() {
+            this.emit('pan');
         }
 
         /**
@@ -671,8 +669,8 @@ var AloeTouchObject = function () {
 
     }, {
         key: 'pan2',
-        value: function pan2(coords) {
-            this.emit('pan2', coords);
+        value: function pan2() {
+            this.emit('pan2');
         }
 
         /**
@@ -684,7 +682,7 @@ var AloeTouchObject = function () {
     }, {
         key: 'pinch',
         value: function pinch(distance) {
-            this.emit('pinch', distance);
+            this.emit('pinch', { distance: distance });
         }
 
         /**
@@ -696,7 +694,7 @@ var AloeTouchObject = function () {
     }, {
         key: 'rotate',
         value: function rotate(rotation) {
-            this.emit('rotate', rotation);
+            this.emit('rotate', { rotation: rotation });
         }
 
         /* -------------------------------------
@@ -707,18 +705,51 @@ var AloeTouchObject = function () {
          * Emette un evento se settato
          *
          * @param {String} event Nome dell'evento da emettere
-         * @param {Object} data Dati da passare alla funzione settata per l'evento
          */
 
     }, {
         key: 'emit',
         value: function emit(event, data) {
             if (this.events[event]) {
-                var result = this.events[event](data ? data : this.stateValue, data ? this.stateValue : null);
+
+                //let result = this.events[event](data ? data : this.stateValue, data ? this.stateValue : null)
+                var result = this.events[event](this.setEventData(data));
 
                 // Prevengo la gestione degli altri eventi se - nella funzione settata dall'utente - viene restituito il booleano false
                 return result === false && this.clear();
             }
+        }
+    }, {
+        key: 'setEventData',
+        value: function setEventData(data) {
+            var coords = void 0,
+                directions = void 0,
+                duration = void 0;
+
+            // Per l'evento tap e press
+            if (!this.ended) {
+                this.ended = this.utils.create(null);
+                coords = { x: this.started.touches[0].clientX, y: this.started.touches[0].clientY };
+            } else {
+                coords = this.utils.coords(this.started, this.ended);
+                directions = this.utils.stringDirection(coords);
+            }
+            duration = this.ended.time - this.started.time;
+
+            return Object.assign({}, {
+                el: this.el,
+                coords: coords,
+                directions: directions,
+                /*velocity: {
+                    x: coords.x / duration * 1000,
+                    y: coords.y / duration * 1000,
+                    a: (this.utils.scalar(coords.x, coords.y) / duration ) * 1000
+                },*/
+                fingers: this.utils.howManyTouches(this.ended),
+                $state: this.stateValue,
+                $event: this.$event,
+                duration: duration
+            }, data);
         }
 
         /**
@@ -801,12 +832,11 @@ var State = {
     /**
      * Crea un oggetto vuoto per il contenimento dei valori degli eventi pan, pinch e rotate
      */
-    new: function _new() {
+    init: function init() {
         return {
             pan: { x: null, y: null },
             pinch: null,
-            rotate: null,
-            fingers: null
+            rotate: null
         };
     },
 
@@ -815,7 +845,7 @@ var State = {
      * Crea un nuovo oggetto che conterra i valori precedenti degli eventi
      */
     create: function create() {
-        return Object.assign({}, State.new(), { old: State.new() });
+        return Object.assign({}, State.init(), { $old: State.init() });
     },
 
 
@@ -826,11 +856,10 @@ var State = {
      * @param {ATEvent} event
      */
     set: function set(state, event, customState) {
-        event.fingers && (state.fingers = event.fingers);
-        event.rotate && (state.rotate = event.rotate + state.old.rotate);
-        event.pinch && (state.pinch = event.pinch + state.old.pinch);
-        event.pan && event.pan.x && (state.pan.x = event.pan.x + state.old.pan.x);
-        event.pan && event.pan.y && (state.pan.y = event.pan.y + state.old.pan.y);
+        event.rotate && (state.rotate = event.rotate + state.$old.rotate);
+        event.pinch && (state.pinch = event.pinch + state.$old.pinch);
+        event.pan && event.pan.x && (state.pan.x = event.pan.x + state.$old.pan.x);
+        event.pan && event.pan.y && (state.pan.y = event.pan.y + state.$old.pan.y);
 
         // Aggiungo gli state settati dall'utente
         Object.keys(customState).forEach(function (cs) {
@@ -847,7 +876,7 @@ var State = {
      * @param {ATS} state
      */
     refresh: function refresh(state) {
-        state.old = State.copyState(state);
+        state.$old = State.copyState(state);
 
         return state;
     },
@@ -859,7 +888,7 @@ var State = {
     copyState: function copyState(state) {
         var n = {};
         Object.keys(state).forEach(function (k) {
-            k != 'old' && (n[k] = _typeof(state[k]) === 'object' && state[k] !== null ? State.copyState(state[k]) : state[k]);
+            k != '$old' && (n[k] = _typeof(state[k]) === 'object' && state[k] !== null ? State.copyState(state[k]) : state[k]);
         });
         return n;
     }
@@ -892,7 +921,7 @@ var Utils = {
     create: function create(event, element, oldATO) {
         var ATO = oldATO ? Object.assign({}, oldATO, { updated: true }) : { time: Date.now() };
 
-        ATO.touches = Utils.getTouches(event.touches ? event.touches : [event], element);
+        ATO.touches = event && event.touches ? Utils.getTouches(event.touches, element) : [{ clientX: 0, clientY: 0 }];
 
         return ATO;
     },
@@ -1031,9 +1060,8 @@ var Utils = {
     /**
      * Distanza scalare
      */
-    scalar: function scalar(a, b, nosqrt) {
-        var s = Math.pow(a, 2) + Math.pow(b, 2);
-        return nosqrt === false ? s : Math.sqrt(s);
+    scalar: function scalar(a, b) {
+        return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
     },
 
 
