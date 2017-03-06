@@ -1,1 +1,3 @@
-module.exports = require('./dist/aloetouch')
+import AloeTouch from './dist/aloetouch'
+
+window.AloeTouch = AloeTouch
