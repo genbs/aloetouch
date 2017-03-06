@@ -1,13 +1,12 @@
 {
   "name": "aloetouch",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "description": "JS library for touch event",
-  "main": "index.js",
+  "main": "./dist/aloetouch.js",
   "scripts": {
     "build": "webpack && webpack -p",
     "watch": "webpack --watch",
-    "prepublish": "npm run build",
-    "babel": "babel src/AloeTouch.js --out-file dist/aloetouch.js"
+    "prepublish": "build"
   },
   "repository": {
     "type": "git",
