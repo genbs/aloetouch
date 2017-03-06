@@ -1,5 +1,1 @@
-import AloeTouch from './dist/aloetouch'
-
-window.AloeTouch = AloeTouch
-
-export default AloeTouch
+module.exports = require('./dist/aloetouch')
