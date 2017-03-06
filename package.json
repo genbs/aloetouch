@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack && webpack -p",
     "watch": "webpack --watch",
-    "prepublish": "build"
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
