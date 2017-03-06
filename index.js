@@ -1,1 +1,1 @@
-module.exports = require('./dist/aloetouch')
+module.exports = require('./dist/aloetouch.js')

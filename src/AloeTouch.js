@@ -3,7 +3,7 @@ import AloeTouchObject from './AloeTouchObject'
 /**
  * AloeTouch
  */
-let AloeTouch = {
+export default AloeTouch = {
 
     /**
      * Contiene il numero di elementi
@@ -177,5 +177,3 @@ let AloeTouch = {
     }
 
 }
-
-export default AloeTouch
