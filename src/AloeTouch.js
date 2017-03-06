@@ -172,7 +172,7 @@ let AloeTouch = {
      *
      * @param {Callable(AloeTouchObject, id)}
      */
-    map(callable){
+    map(callable) {
         Object.keys(AloeTouch.list).forEach(id => callable(AloeTouch.list[id], id))
     }
 

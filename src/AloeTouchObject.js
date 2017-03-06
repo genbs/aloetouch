@@ -297,7 +297,7 @@ export default class AloeTouchObject {
      */
     swipe()
     {
-        let coords = this.utils.coords(this.started, this.ended)
+        let coords = this.ended ? this.utils.coords(this.started, this.ended) : {}
 
         if( Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
         {
