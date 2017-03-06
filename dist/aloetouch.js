@@ -1,3 +1,4 @@
+exports["AloeTouch"] =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -160,8 +161,8 @@ var AloeTouchObject = function () {
         key: 'start',
         value: function start(event) {
             if (!this.locked) {
-                this.$event = event;
-                this.started = this.utils.create(event, this.strictMode ? this.el : null, this.started);
+                console.log('start');
+                this.started = this.utils.create(event, this.el, this.strictMode, this.started);
                 this.started.updated ? this.mooving = true : this.pressEmitted = window.setTimeout(this.press.bind(this), ALOETOUCH_PRESS_MIN_TIME);
                 // Binderà l'evento press solo se non sarà invocato nè l'evento move, nè finish
                 this.emit('start');
@@ -178,10 +179,12 @@ var AloeTouchObject = function () {
             var _this = this;
 
             // Controllo se sono settate le coordinate del touch all'evento start e bindo le nuove coordinate (ended)
-            !this.locked && this.prepareMove(event, function (ended) {
+
+            this.prepareMove(event, function (ended) {
                 if (_this.isPermissible()) {
                     event.preventDefault();
-                    _this.$event = event;
+                    event.stopPropagation();
+
                     _this.mooving = true;
                     _this.dispatch(); // Smisto gli eventi 'mobili': pan, rotate, pitch
                 } else {
@@ -197,7 +200,7 @@ var AloeTouchObject = function () {
     }, {
         key: 'prepareMove',
         value: function prepareMove(event, callback) {
-            this.started ? callback(this.ended = this.utils.create(event, this.strictMode ? this.el : null)) : this.clear();
+            !this.locked && this.started ? callback(this.ended = this.utils.create(event, this.el, this.strictMode)) : null;
         }
 
         /**
@@ -264,9 +267,9 @@ var AloeTouchObject = function () {
     }, {
         key: 'finish',
         value: function finish(event) {
+            console.log('finish');
             if (!this.locked && this.started) // Controllo che vale anche per l'evento touchmove
                 {
-                    this.$event = event;
                     this.mooving && this.swipe();
                     this.mooving === null && this.tap();
                     this.stateValue = this.state.refresh(this.stateValue, this.events.state); // aggiorno lo state
@@ -283,12 +286,12 @@ var AloeTouchObject = function () {
     }, {
         key: 'clear',
         value: function clear() {
+            console.log('CLEAR');
             this.pressEmitted && window.clearTimeout(this.pressEmitted); // Cancello l'evento press
 
             this.started = null;
             this.ended = null;
             this.mooving = null;
-            this.$event = null;
             this.pressEmitted = null;
         }
 
@@ -316,9 +319,9 @@ var AloeTouchObject = function () {
         key: 'lock',
         value: function lock() {
             if (!this.locked) {
-                this.off('touchstart', this.start, true);
+                this.off('touchstart', this.start);
                 this.off('touchmove', this.move);
-                this.off('touchend touchcancel', this.finish, true);
+                this.off('touchend touchcancel', this.finish);
                 this.locked = true;
             }
         }
@@ -331,9 +334,9 @@ var AloeTouchObject = function () {
         key: 'unlock',
         value: function unlock() {
             if (this.locked) {
-                this.on('touchstart', this.start, true);
+                this.on('touchstart', this.start);
                 this.on('touchmove', this.move);
-                this.on('touchend touchcancel', this.finish, true);
+                this.on('touchend touchcancel', this.finish);
                 this.locked = false;
             }
         }
@@ -537,7 +540,6 @@ var AloeTouchObject = function () {
                 },
                 fingers: this.utils.howManyTouches(this.ended),
                 $state: this.stateValue,
-                $event: this.$event,
                 duration: duration
             }, data);
         }
@@ -576,11 +578,11 @@ var AloeTouchObject = function () {
 
     }, {
         key: 'on',
-        value: function on(events, handler, passive) {
+        value: function on(events, handler) {
             var _this5 = this;
 
             events.split(' ').forEach(function (e) {
-                return _this5.el.addEventListener(e, handler, passive ? { passive: true } : false);
+                return _this5.el.addEventListener(e, handler, true);
             });
         }
 
@@ -594,7 +596,7 @@ var AloeTouchObject = function () {
             var _this6 = this;
 
             events.split(' ').forEach(function (e) {
-                return _this6.el.removeEventListener(e, handler, passive ? { passive: true } : false);
+                return _this6.el.removeEventListener(e, handler, true);
             });
         }
     }]);
@@ -708,10 +710,10 @@ var Utils = {
      * @param  {DOMElement} element
      * @param  {ATO?}       oldATO
      */
-    create: function create(event, element, oldATO) {
+    create: function create(event, element, strict, oldATO) {
         var ATO = oldATO ? Object.assign({}, oldATO, { updated: true }) : { time: Date.now() };
-
         ATO.touches = event && event.touches ? Utils.getTouches(event.touches, element) : [{ clientX: 0, clientY: 0 }];
+        console.log('create', ATO, event, oldATO);
 
         return ATO;
     },
@@ -724,11 +726,11 @@ var Utils = {
      * @param  {DOMElement} element L'emento esiste solo se è settato STRICT
      * @return {Array}
      */
-    getTouches: function getTouches(touches, element) {
+    getTouches: function getTouches(touches, element, strict) {
         var data = [];
 
         Object.keys(touches).forEach(function (e) {
-            Utils.validate(touches[e], element) && data.push({
+            Utils.validate(touches[e], element, strict) && data.push({
                 clientX: touches[e].clientX,
                 clientY: touches[e].clientY
             });
@@ -744,8 +746,8 @@ var Utils = {
      * @param {Touch}      touch
      * @param {DOMElement} element
      */
-    validate: function validate(touch, element) {
-        return touch && (touch.clientX || touch.clientY) && (!element || element == touch.target);
+    validate: function validate(touch, element, strict) {
+        return touch && (touch.clientX || touch.clientY) && (!strict ? element.contains(touch.target) : element == touch.target);
     },
 
 
@@ -832,6 +834,7 @@ var Utils = {
      * @param {ATO} ATOend
      */
     distanceBetween: function distanceBetween(ATOstart, ATOend) {
+        console.log('distanceBetween', ATOstart, ATOend);
         return Utils.distance(ATOend) - Utils.distance(ATOstart);
     },
 

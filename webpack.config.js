@@ -6,6 +6,8 @@ let config = {
     entry: './src/AloeTouch.js',
     output: {
         filename: './dist/aloetouch.js',
+        library: 'AloeTouch',
+        libraryTarget: 'commonjs'
     },
     module: {
         loaders: [{

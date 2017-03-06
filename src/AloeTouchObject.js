@@ -66,9 +66,9 @@ export default class AloeTouchObject {
     start(event)
     {
         if(!this.locked) {
-            this.$event = event
-            this.started = this.utils.create(event, this.strictMode ? this.el : null, this.started)
-            this.started.updated ?( this.mooving = true ) : ( this.pressEmitted = window.setTimeout(this.press.bind(this), ALOETOUCH_PRESS_MIN_TIME) )
+            console.log('start');
+            this.started = this.utils.create(event, this.el, this.strictMode, this.started)
+            this.started.updated ? ( this.mooving = true ) : ( this.pressEmitted = window.setTimeout(this.press.bind(this), ALOETOUCH_PRESS_MIN_TIME) )
             // Binderà l'evento press solo se non sarà invocato nè l'evento move, nè finish
             this.emit('start')
         }
@@ -80,11 +80,13 @@ export default class AloeTouchObject {
     move(event)
     {
         // Controllo se sono settate le coordinate del touch all'evento start e bindo le nuove coordinate (ended)
-        !this.locked && this.prepareMove(event, ended => {
+
+        this.prepareMove(event, ended => {
             if(this.isPermissible())
             {
                 event.preventDefault()
-                this.$event = event
+                event.stopPropagation()
+
                 this.mooving = true
                 this.dispatch() // Smisto gli eventi 'mobili': pan, rotate, pitch
             } else {
@@ -98,7 +100,7 @@ export default class AloeTouchObject {
      */
     prepareMove(event, callback)
     {
-        this.started ? callback((this.ended = this.utils.create(event, this.strictMode ? this.el : null))) : this.clear()
+        !this.locked && this.started ? callback((this.ended = this.utils.create(event, this.el, this.strictMode))) : null
     }
 
     /**
@@ -157,9 +159,9 @@ export default class AloeTouchObject {
      */
     finish(event)
     {
+        console.log('finish');
         if( !this.locked && this.started )  // Controllo che vale anche per l'evento touchmove
         {
-            this.$event = event
             this.mooving && this.swipe()
             this.mooving === null && this.tap()
             this.stateValue = this.state.refresh(this.stateValue, this.events.state) // aggiorno lo state
@@ -174,12 +176,12 @@ export default class AloeTouchObject {
      */
     clear()
     {
+        console.log('CLEAR');
         this.pressEmitted && window.clearTimeout(this.pressEmitted) // Cancello l'evento press
 
         this.started = null
         this.ended = null
         this.mooving = null
-        this.$event = null
         this.pressEmitted = null
     }
 
@@ -202,9 +204,9 @@ export default class AloeTouchObject {
     lock()
     {
         if( !this.locked ) {
-            this.off('touchstart', this.start, true)
+            this.off('touchstart', this.start)
             this.off('touchmove', this.move)
-            this.off('touchend touchcancel', this.finish, true)
+            this.off('touchend touchcancel', this.finish)
             this.locked = true
         }
     }
@@ -215,9 +217,9 @@ export default class AloeTouchObject {
     unlock()
     {
         if( this.locked ) {
-            this.on('touchstart', this.start, true)
+            this.on('touchstart', this.start)
             this.on('touchmove', this.move)
-            this.on('touchend touchcancel', this.finish, true)
+            this.on('touchend touchcancel', this.finish)
             this.locked = false
         }
     }
@@ -395,7 +397,6 @@ export default class AloeTouchObject {
             },
             fingers: this.utils.howManyTouches(this.ended),
             $state: this.stateValue,
-            $event: this.$event,
             duration
         }, data)
     }
@@ -419,9 +420,9 @@ export default class AloeTouchObject {
     /**
      * Bindo gli eventi all'elemento
      */
-    on(events, handler, passive)
+    on(events, handler)
     {
-        events.split(' ').forEach( e => this.el.addEventListener(e, handler, passive ? { passive: true } : false) )
+        events.split(' ').forEach( e => this.el.addEventListener(e, handler, true) )
     }
 
     /**
@@ -429,7 +430,7 @@ export default class AloeTouchObject {
      */
     off(events, handler, passive)
     {
-        events.split(' ').forEach( e => this.el.removeEventListener(e, handler, passive ? { passive: true } : false) )
+        events.split(' ').forEach( e => this.el.removeEventListener(e, handler, true) )
     }
 }
 

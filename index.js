@@ -1,5 +1,5 @@
-var aloetouch = require('./dist/aloetouch.js');
+var AloeTouch = require('./dist/aloetouch.js').AloeTouch
 
-console.log('asdas', aloetouch)
+window.AloeTouch = AloeTouch.default
 
-module.exports = aloetouch
+module.exports = AloeTouch

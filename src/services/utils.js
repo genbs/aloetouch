@@ -6,11 +6,11 @@ let Utils = {
      * @param  {DOMElement} element
      * @param  {ATO?}       oldATO
      */
-    create(event, element, oldATO)
+    create(event, element, strict, oldATO)
     {
         let ATO = oldATO ? Object.assign({}, oldATO, { updated: true }) : { time: Date.now() }
-
         ATO.touches = event && event.touches ? Utils.getTouches(event.touches, element) : [{ clientX: 0, clientY: 0 }]
+        console.log('create', ATO, event,  oldATO);
 
         return ATO
     },
@@ -22,11 +22,11 @@ let Utils = {
      * @param  {DOMElement} element L'emento esiste solo se è settato STRICT
      * @return {Array}
      */
-    getTouches(touches, element){
+    getTouches(touches, element, strict){
         let data = []
 
         Object.keys(touches).forEach(e => {
-            Utils.validate(touches[e], element) && data.push({
+            Utils.validate(touches[e], element, strict) && data.push({
                 clientX: touches[e].clientX,
                 clientY: touches[e].clientY
             })
@@ -41,9 +41,9 @@ let Utils = {
      * @param {Touch}      touch
      * @param {DOMElement} element
      */
-    validate(touch, element)
+    validate(touch, element, strict)
     {
-        return touch && ( touch.clientX || touch.clientY ) && (!element || element == touch.target)
+        return touch && ( touch.clientX || touch.clientY ) && ( !strict ? element.contains(touch.target) : element == touch.target )
     },
 
     /**
@@ -131,6 +131,7 @@ let Utils = {
      */
     distanceBetween(ATOstart, ATOend)
     {
+        console.log('distanceBetween', ATOstart, ATOend);
         return Utils.distance(ATOend) - Utils.distance(ATOstart)
     },
 
