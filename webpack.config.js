@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const min = process.argv.indexOf('-p') >= 0;
 
 let config = {
-    entry: './index.js',
+    entry: './src/AloeTouch.js',
     output: {
         filename: './dist/aloetouch.js',
     },
