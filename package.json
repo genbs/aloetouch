@@ -2,7 +2,7 @@
   "name": "aloetouch",
   "version": "0.2.4",
   "description": "JS library for touch event",
-  "main": "./dist/aloetouch.js",
+  "main": "./index.js",
   "scripts": {
     "build": "webpack && webpack -p",
     "watch": "webpack --watch",
