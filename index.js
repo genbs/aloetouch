@@ -1,4 +1,1 @@
-var aloetouch = require('./dist/aloetouch')
-
-module.exports = aloetouch
-module.exports.default = aloetouch
+module.exports = require('./dist/aloetouch')
