@@ -919,7 +919,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /**
  * AloeTouch
  */
-exports.default = AloeTouch = {
+var AloeTouch = {
 
   /**
    * Contiene il numero di elementi
@@ -1106,6 +1106,8 @@ exports.default = AloeTouch = {
     });
   }
 };
+
+exports.default = AloeTouch;
 
 /***/ })
 /******/ ]);
