@@ -1,4 +1,4 @@
-import AloeTouchObject from './AloeTouchObject'
+import AloeTouchObject from './classes/AloeTouchObject'
 
 /**
  * AloeTouch
@@ -30,32 +30,11 @@ let AloeTouch = {
     {
         let id = ++AloeTouch.length
 
-        return ( AloeTouch.list[id] = {
-                    $id: id,                              // id dell'oggetto
-                 attach: AloeTouch.caller('attach'),      // Binda un evento
-                 detach: AloeTouch.caller('detach'),      // Rimuovo il listener di un evento
-               setState: AloeTouch.caller('setState'),    // Setta uno stato personalizzato
-               getState: AloeTouch.caller('getState'),    // Setta uno stato personalizzato
-            removeState: AloeTouch.caller('removeState'), // Rimuove uno state
-             clearState: AloeTouch.caller('clearState'),  // Azzera la variabile state
-                 isLock: AloeTouch.caller('isLock'),      // Rimuove i listener per tutti gli eventi
-                   lock: AloeTouch.caller('lock'),        // Rimuove i listener per tutti gli eventi
-                 unlock: AloeTouch.caller('unlock'),      // Rebinda i listener per gli eventii
-                   $ref: new AloeTouchObject( id, element, events, strict )  // refrenza all'oggetto
-        } )
+        AloeTouch.list[id] = new AloeTouchObject( id, element, events, strict ).public
+
+        return AloeTouch.list[id]
     },
 
-    /**
-     * Chiama una funzione bindando il riferimento dell'oggetto chimante
-     * @param  {String} fn
-     * @return {Function}
-     */
-    caller(fn)
-    {
-        return function(data) {
-            this.$ref && this.$ref[fn](data)
-        }
-    },
 
     /**
      * Rimuove i listener ad un elemento

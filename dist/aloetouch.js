@@ -64,7 +64,7 @@ exports["AloeTouch"] =
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -77,206 +77,342 @@ exports["AloeTouch"] =
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.getTouches = getTouches;
+exports.validate = validate;
+exports.coords = coords;
+exports.diff = diff;
+exports.fingers = fingers;
+exports.isVertical = isVertical;
+exports.isHorizontal = isHorizontal;
+exports.stringDirection = stringDirection;
+exports.velocity = velocity;
+exports.distanceBetween = distanceBetween;
+exports.distance = distance;
+exports.scalar = scalar;
+exports.direction = direction;
+exports.angle = angle;
+exports.rotation = rotation;
+/**
+ * Preleva la touchlist (modificata) dall'evento
+ *
+ * @param  {Touchlist}  touches [description]
+ * @param  {DOMElement} element L'emento esiste solo se è settato STRICT
+ * @param  {Boolean}    strict
+ * @return {Array}
+ */
+function getTouches(event, element, strict) {
+
+    var data = [];
+    var touches = event.touches ? event.touches : { 'e': event };
+
+    Object.keys(touches).forEach(function (e) {
+        validate(touches[e], element, strict) && data.push({
+            screenX: touches[e].screenX,
+            screenY: touches[e].screenY
+        });
+    });
+
+    return data;
+}
+
+/**
+ * Aggiunge l'oggetto Touch se rispetta la validazone
+ *
+ * @param {Touch}      touch
+ * @param {DOMElement} element
+ * @param {Boolean}    strict
+ */
+function validate(touch, element, strict) {
+    return touch && (touch.screenX || touch.screenY) && (!strict ? element.contains(touch.target) : element == touch.target);
+}
+
+/**
+ * Ritorna la differenza delle coordinate tra due ATO
+ *
+ * @param {ATO} ATOstart
+ * @param {ATO} ATOend
+ */
+function coords(ATOstart, ATOend) {
+    return diff(ATOstart.touches[0], ATOend.touches[0]);
+}
+
+/**
+ * Ritorna una coordinata basata sulla differenza tra due punti
+ *
+ * @param {ATO.touch} pointA
+ * @param {ATO.touch} pointB
+ */
+function diff(pointA, pointB) {
+    return {
+        x: pointB.screenX - pointA.screenX,
+        y: pointB.screenY - pointA.screenY
+    };
+}
+
+/**
+ * Ritorna il numero di touch
+ *
+ * @param {ATO} ATOe
+ */
+function fingers(ATO) {
+    return ATO && ATO.touches ? ATO.touches.length : 0;
+}
+
+/**
+ * Ritorna true se la differenza tra le coordinate è principalmente verticale
+ *
+ * @param {ATO} ATOstart
+ * @param {ATO} ATOend
+ */
+function isVertical(ATOstart, ATOend) {
+    var _coords = coords(ATOstart, ATOend);
+    return Math.abs(_coords.y) > Math.abs(_coords.x);
+}
+
+/**
+ * Ritorna true se la differenza tra le coordinate è principalmente orizzontale
+ *
+ * @param {ATO} ATOstart
+ * @param {ATO} ATOend
+ */
+function isHorizontal(ATOstart, ATOend) {
+    var _coords = coords(ATOstart, ATOend);
+    return Math.abs(_coords.x) > Math.abs(_coords.y);
+}
+
+/**
+ * Ritorna la direzione in base al valore delle coordinate
+ *
+ * @param {Object{x,y} } coords
+ */
+function stringDirection(_coords) {
+    return {
+        x: _coords.x <= 0 ? 'Left' : 'Right',
+        y: _coords.y <= 0 ? 'Top' : 'Bottom'
+    };
+}
+
+function velocity(ATOstart, ATOend) {
+    var _coords = coords(ATOstart, ATOend);
+    var duration = (ATOend.time - ATOstart.time) / 1000;
+
+    return {
+        x: _coords.x / duration,
+        y: _coords.y / duration,
+        d: scalar(_coords.x, _coords.y) / duration
+    };
+}
+
+/**
+ * Ritorna la distanza tra due ATO
+ *
+ * @param {ATO} ATOstart
+ * @param {ATO} ATOend
+ */
+function distanceBetween(ATOstart, ATOend) {
+    return distance(ATOend) - distance(ATOstart);
+}
+
+/**
+ * Ritorna la distanza vettoriale tra due coordinata
+ *
+ * @param {ATO} ATO
+ */
+function distance(ATO) {
+    var distance = diff(ATO.touches[0], ATO.touches[1]);
+    return scalar(distance.x, distance.y);
+}
+
+/**
+ * Distanza scalare
+ */
+function scalar(a, b) {
+    return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+}
+
+/**
+ * Ritorna la direzione tangente tra due coordinate
+ *
+ * @param {ATO} ATO
+ */
+function direction(ATO) {
+    var distance = diff(ATO.touches[0], ATO.touches[1]);
+    return angle(distance.x, distance.y);
+}
+
+/**
+ * Angolo
+ */
+function angle(a, b) {
+    return Math.atan2(b, a) * 180 / Math.PI;
+}
+
+/**
+ * Ritorna l'angolo di rotazione tra due ATO
+ *
+ * @param {ATO} ATOstart
+ * @param {ATO} ATOend
+ */
+function rotation(ATOstart, ATOend) {
+    return direction(ATOend) - direction(ATOstart);
+}
+
+/***/ }),
+/* 1 */,
+/* 2 */,
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _utils = __webpack_require__(2);
+var _constants = __webpack_require__(9);
 
-var _utils2 = _interopRequireDefault(_utils);
+var _Utils = __webpack_require__(0);
 
-var _state = __webpack_require__(1);
+var _Emitter = __webpack_require__(4);
 
-var _state2 = _interopRequireDefault(_state);
+var _Emitter2 = _interopRequireDefault(_Emitter);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
- * La durata minimina per bindare un evento
- * Utile a non prevenire lo scrolling
- * @type {Number}
+ * Dispatcher - smistare gli eventi
  */
-var ALOETOUCH_MIN_TIME = 85;
-
-/**
- * Tempo minimo per bindare l'evento press
- * @type {Number}
- */
-var ALOETOUCH_PRESS_MIN_TIME = 600;
-
-/**
- * Distanza minima per bindare l'evento swipe[Direction]
- * @type {Number}
- */
-var ALOETOUCH_MIN_SWIPE_DISTANCE = 20;
-
-/**
- * Assegna gli eventi touch ad un elemento
- *
- * GLi eventi disponibili sono:
- * Touch singolo
- *     tap, press, pan, swipeLeft, swipeRight, swipeTop, swipeBottom
- * Touch doppio
- *     pinch, rotate
- */
-
-var AloeTouchObject = function () {
+var Dispatcher = function () {
 
     /**
-     * Binda gli eventi all'elemento
-     * @param {DomElement} element
-     * @param {Object} events Oggetto che contiene le funzioni es. { tap: ..., swipeLeft: ..., rotate: ... }
-     * @param {Boolean} strict Aggiunge le coordinate del tuoch solo se il target è uguale all'elemento bindato
+     * Binda l'Emtitter che chiamerà gli eventi
      */
-    function AloeTouchObject(id, element, events, strict) {
-        _classCallCheck(this, AloeTouchObject);
+    function Dispatcher(id, element, events) {
+        _classCallCheck(this, Dispatcher);
 
-        this.id = id;
-        this.el = typeof element === 'string' ? document.querySelector(element) : element;
-        this.events = events || {};
-        this.strictMode = strict || false;
-        this.events.state = this.events.state || {};
-        this.locked = true;
-
-        // Services
-        this.utils = _utils2.default;
-        this.state = _state2.default;
-
-        this.start = this.start.bind(this);
-        this.move = this.move.bind(this);
-        this.finish = this.finish.bind(this);
-
-        this.clear();
-        this.clearState();
-        this.unlock();
+        this.Emitter = new _Emitter2.default(id, element, events || {});
+        this.started = null;
+        this.ended = null;
+        this.lastTap = null;
     }
 
     /**
-     * Eventi 'touchstart' 'mousedown'
+     * Setta l'evento iniziale
+     * Binderà l'evento press nel caso in cui l'utente non rilascerà o muoverà l'elemento
      */
 
 
-    _createClass(AloeTouchObject, [{
+    _createClass(Dispatcher, [{
         key: 'start',
-        value: function start(event) {
-            if (!this.locked) {
-                console.log('start');
-                this.started = this.utils.create(event, this.el, this.strictMode, this.started);
-                this.started.updated ? this.mooving = true : this.pressEmitted = window.setTimeout(this.press.bind(this), ALOETOUCH_PRESS_MIN_TIME);
-                // Binderà l'evento press solo se non sarà invocato nè l'evento move, nè finish
-                this.emit('start');
+        value: function start(event, touches) {
+            if (!event.cancelable) return this.clear();
+
+            !this.started ? this.started = { time: Date.now(), touches: touches } : this.started.touches = touches;
+
+            var _fingers = (0, _Utils.fingers)(this.started);
+
+            if (_fingers) {
+                this.Emitter.prepare(this.started);
+                this.Emitter.emitBefore('press', _constants.ALOETOUCH_PRESS_MIN_TIME);
+                this.Emitter.emit('start');
+
+                _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
             }
         }
 
         /**
-         * Eventi 'touchmove'
+         * Ritorna vero se l'evento è stato inizializzato correttamente
          */
 
     }, {
-        key: 'move',
-        value: function move(event) {
-            var _this = this;
-
-            // Controllo se sono settate le coordinate del touch all'evento start e bindo le nuove coordinate (ended)
-
-            this.prepareMove(event, function (ended) {
-                if (_this.isPermissible()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    _this.mooving = true;
-                    _this.dispatch(); // Smisto gli eventi 'mobili': pan, rotate, pitch
-                } else {
-                    _this.mooving = false; // L'evento non può più essere prevenuto
-                }
-            });
+        key: 'isStarted',
+        value: function isStarted() {
+            return !!this.started;
         }
 
         /**
-         * Eseguo la funczione moove solo se sono settate le coordinate iniziali
+         * Setta il punto corrente ( richiamato dalla gestore dell'evento touchmove: AloeTouchObject@move )
          */
 
     }, {
-        key: 'prepareMove',
-        value: function prepareMove(event, callback) {
-            !this.locked && this.started ? callback(this.ended = this.utils.create(event, this.el, this.strictMode)) : null;
+        key: 'end',
+        value: function end(event, touches) {
+            this.ended = { time: Date.now(), touches: touches };
+
+            return (0, _Utils.fingers)(this.started) == (0, _Utils.fingers)(this.ended);
         }
 
         /**
-         * Questa funzionalitò è molto importante poiché previene che l'evento 'touchmove'
-         * prevenga l'azione di default dell'evento (e quindi blocchi lo scrolling)
-         */
-
-    }, {
-        key: 'isPermissible',
-        value: function isPermissible() {
-            var time = this.ended.time - this.started.time;
-            var isHorizontal = this.utils.isHorizontal(this.started, this.ended); // Se lo scrolling è orizzontale implica che l'utente non sta scorrendo
-            // verticalmente la pagina, quindi è possibile bloccare lo scrolling
-            return this.mooving || this.mooving === null // Il caso in cui questa variabile risulta === null avviene solo la priva volta che viene invocata la fuonzione move,
-            && (isHorizontal || time > ALOETOUCH_MIN_TIME) // infatti viene nullata con la funzione clear presente nel metodo start. Questa cndizione è necessaria perché il metodo
-            ; // preventDefault() di Event non può essere invocato in un secondo stadio dell'evento 'touchmove', ma solo la prima volta
-        }
-
-        /**
-         * Smisto gli eventi in 'touchmove' in base al numero di tocchi
+         * Smisto gli eventi in 'touchmove' in base al numero di tocchi in base alla tipologia dell'evento
+         *
+         * @param {Boolean} final Questo valore è settato a true se questa funzione è chiamanta dall'evento touchend o touchcancel
          */
 
     }, {
         key: 'dispatch',
-        value: function dispatch() {
-            var fingers = this.utils.howManyTouches(this.ended),
-                pan = null,
-                pinch = null,
-                rotate = null;
+        value: function dispatch(final) {
+            var _fingers = (0, _Utils.fingers)(this.ended);
 
-            if (fingers == 1) {
-                pan = this.utils.coords(this.started, this.ended);
-            } else if (fingers == 2) {
-                pan = this.utils.coords(this.started, this.ended);
-                pinch = this.utils.distanceBetween(this.started, this.ended);
-                rotate = this.utils.rotation(this.started, this.ended);
-            }
+            this.Emitter.prepare(this.started, this.ended, _fingers, !!final);
 
-            this.setStateAndEmit({ pan: pan, pinch: pinch, rotate: rotate }, fingers);
-            this.emit('move');
+            final ? this.dispatchFinalEvents(!!this.ended) : this.dispatchMovedEvents(_fingers); // Smisto al tipo di eventi
         }
 
         /**
-         * Setta i valore dello state ed emette gli eventi
-         *
-         * @param {Object} eventValues Valori da emettere
+         * Gestione degli eventi che non richiedono movimento
          */
 
     }, {
-        key: 'setStateAndEmit',
-        value: function setStateAndEmit(eventValues, fingers) {
-            this.stateValue = this.state.set(this.stateValue, eventValues, this.events.state);
-
-            fingers == 1 && eventValues.pan && this.pan();
-            fingers == 2 && eventValues.pan && this.pan2();
-            eventValues.pinch && this.pinch(eventValues.pinch);
-            eventValues.rotate && this.rotate(eventValues.rotate);
-        }
-
-        /**
-         * Termino l'evento
-         */
-
-    }, {
-        key: 'finish',
-        value: function finish(event) {
-            console.log('finish');
-            if (!this.locked && this.started) // Controllo che vale anche per l'evento touchmove
-                {
-                    this.mooving && this.swipe();
-                    this.mooving === null && this.tap();
-                    this.stateValue = this.state.refresh(this.stateValue, this.events.state); // aggiorno lo state
-                    this.emit('end');
-                }
+        key: 'dispatchFinalEvents',
+        value: function dispatchFinalEvents(move) {
+            move ? this.Emitter.emit('swipe') : this.dispatchTap();
 
             this.clear();
+        }
+
+        /**
+         * Gestione degli eventi con movimento
+         */
+
+    }, {
+        key: 'dispatchMovedEvents',
+        value: function dispatchMovedEvents(_fingers) {
+            this.Emitter.clearBefore('press'); // l'evento press non è più valido se l'utente si muove sull'elemento
+
+            // Smisto gli eventi in base al numero dei tocchi
+            if (_fingers == 1) this.Emitter.emit('pan');else if (_fingers == 2) {
+                this.Emitter.emit('pan2');
+                this.Emitter.emit('pinch');
+                this.Emitter.emit('rotate');
+            }
+
+            this.Emitter.emit('move'); // Chiamo l'evento speciale 'move' in ogni caso
+        }
+
+        /**
+         * Gestione dell'evento particolare 'tap' e 'dbltap'
+         */
+
+    }, {
+        key: 'dispatchTap',
+        value: function dispatchTap() {
+            var _this = this;
+
+            if (!this.lastTap) {
+                this.lastTap = this.started.time;
+                this.Emitter.emitBefore('tap', _constants.ALOETOUCH_DBL_TAP_TIME, function () {
+                    return _this.lastTap = null;
+                });
+            } else if (this.started.time - this.lastTap < _constants.ALOETOUCH_DBL_TAP_TIME) {
+                this.Emitter.clearBefore('tap');
+                this.Emitter.emit('dbltap');
+                this.lastTap = null;
+            }
         }
 
         /**
@@ -286,262 +422,150 @@ var AloeTouchObject = function () {
     }, {
         key: 'clear',
         value: function clear() {
-            console.log('CLEAR');
-            this.pressEmitted && window.clearTimeout(this.pressEmitted); // Cancello l'evento press
-
             this.started = null;
             this.ended = null;
-            this.mooving = null;
-            this.pressEmitted = null;
+
+            this.Emitter.clearBefore('press');
+            this.Emitter.State.refresh();
+        }
+    }]);
+
+    return Dispatcher;
+}();
+
+exports.default = Dispatcher;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Utils = __webpack_require__(0);
+
+var _Events = __webpack_require__(6);
+
+var _Events2 = _interopRequireDefault(_Events);
+
+var _State = __webpack_require__(5);
+
+var _State2 = _interopRequireDefault(_State);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/* -------------------------------------
+ *  Bindaggio ed emissione eventi
+ * ------------------------------------- */
+
+var Emitter = function () {
+
+    /**
+     * Gestore degli eventi e relativi argomenti
+     */
+    function Emitter(id, el, events) {
+        _classCallCheck(this, Emitter);
+
+        this.events = events;
+        this.State = new _State2.default(events.state || {});
+
+        this.initialData = { id: id, el: el };
+        this.before = {};
+
+        this.detach('state');
+    }
+
+    /**
+     * Emette un evento se settato
+     *
+     * @param {String} event Nome dell'evento da emettere
+     */
+
+
+    _createClass(Emitter, [{
+        key: 'emit',
+        value: function emit(event) {
+            if (_Events2.default.emit(event, this.data, this.events[event], this.data.started.time) === false) this.detach(event);
         }
 
-        /* -------------------------------------
-         *  Eventi
-         * ------------------------------------- */
-
         /**
-         * Ritorna vero se questo oggetto è bloccato, falso altrimenti
+         * Emette un evento dopo un certo 'delay'
          *
-         * @return {Boolean}
+         * @param {String}     event Nome dell'evento da emettere
+         * @param {Int}        delay Millisecondi da ritardare
+         * @param {Callable?}  callback Funzione da chiamare dopo il delay
          */
 
     }, {
-        key: 'isLock',
-        value: function isLock() {
-            return this.locked;
+        key: 'emitBefore',
+        value: function emitBefore(event, delay, callback) {
+            var _this = this;
+
+            this.clearBefore(event);
+
+            this.before[event] = window.setTimeout(function () {
+                _this.emit(event);
+                callback && callback();
+            }, delay);
         }
 
         /**
-         * Rimuove i listener degli eventi
-         */
-
-    }, {
-        key: 'lock',
-        value: function lock() {
-            if (!this.locked) {
-                this.off('touchstart', this.start);
-                this.off('touchmove', this.move);
-                this.off('touchend touchcancel', this.finish);
-                this.locked = true;
-            }
-        }
-
-        /**
-         * Binda gli eventi
-         */
-
-    }, {
-        key: 'unlock',
-        value: function unlock() {
-            if (this.locked) {
-                this.on('touchstart', this.start);
-                this.on('touchmove', this.move);
-                this.on('touchend touchcancel', this.finish);
-                this.locked = false;
-            }
-        }
-
-        /* -------------------------------------
-         *  State
-         * ------------------------------------- */
-
-        /**
-         * Setta uno state
+         * Rimuove un evento da ritardare
          *
-         * @param {Object} state
+         * @param {String?} event Nome dell'evento da rimuovere. Se non settato, verranno rimossi tutti.
          */
 
     }, {
-        key: 'setState',
-        value: function setState(state) {
+        key: 'clearBefore',
+        value: function clearBefore(event) {
             var _this2 = this;
 
-            Object.keys(state).forEach(function (s) {
-                return _this2.events.state[s] = state[s];
-            });
-        }
-
-        /**
-         * Ritorna i valori dello state corrente
-         */
-
-    }, {
-        key: 'getState',
-        value: function getState() {
-            return this.stateValue;
-        }
-
-        /**
-         * Rimuove uno state
-         *
-         * @param {String} name Nome dello state da rimuovere
-         */
-
-    }, {
-        key: 'removeState',
-        value: function removeState(name) {
-            this.state[name] = null;
-            this.stateValue[name] = null;
-            delete this.state[name];
-            delete this.stateValue[name];
-        }
-
-        /**
-         * Cancella lo state con ivalori correnti
-         */
-
-    }, {
-        key: 'clearState',
-        value: function clearState() {
-            this.stateValue = this.state.create();
-        }
-
-        /* -------------------------------------
-         *  Eventi
-         * ------------------------------------- */
-
-        /**
-         * Valido l'evento tap
-         */
-
-    }, {
-        key: 'tap',
-        value: function tap() {
-            var fingers = this.utils.howManyTouches(this.ended);
-            var time = Date.now() - this.started.time;
-
-            if (fingers < 2 && time < ALOETOUCH_PRESS_MIN_TIME) this.emit('tap');
-        }
-
-        /**
-         * Evento press
-         */
-
-    }, {
-        key: 'press',
-        value: function press() {
-            if (this.pressEmitted && !this.mooving) {
-                this.emit('press');
-                this.pressEmitted = null;
+            if (typeof event === 'undefined') Object.keys(this.before).forEach(function (e) {
+                return _this2.clearBefore(e);
+            });else {
+                this.before[event] && window.clearTimeout(this.before[event]);
+                this.before[event] = null;
+                delete this.before[event];
             }
         }
 
         /**
-         * Valido l'evento swipe
+         * Prepare i dati da inviare agli eventi
          */
 
     }, {
-        key: 'swipe',
-        value: function swipe() {
-            var coords = this.ended ? this.utils.coords(this.started, this.ended) : {};
+        key: 'prepare',
+        value: function prepare(started, ended, fingers, final) {
+            this.data = { started: started, ended: ended, fingers: fingers, final: final };
 
-            if (Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE) {
-                var stringDirection = this.utils.stringDirection(coords);
+            this.data.id = this.initialData.id;
+            this.data.el = this.initialData.el;
 
-                this.emit('swipe' + stringDirection.x);
-                this.emit('swipe' + stringDirection.y);
-                this.emit('swipe');
+            !final && this.setStateData(started, ended, fingers); // Setta lo state se si sta 'preparando' un evento non finale
+        }
+
+        /**
+         * Prepara la variabile che conterrà lo 'state'
+         */
+
+    }, {
+        key: 'setStateData',
+        value: function setStateData(started, ended, fingers) {
+            if (fingers == 1) this.data.pan = (0, _Utils.coords)(started, ended);else if (fingers == 2) {
+                this.data.pan = (0, _Utils.coords)(started, ended);
+                this.data.pinch = (0, _Utils.distanceBetween)(started, ended);
+                this.data.rotate = (0, _Utils.rotation)(started, ended);
             }
-        }
 
-        /**
-         * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-          * @param {Object} coords
-         */
-
-    }, {
-        key: 'pan',
-        value: function pan() {
-            this.emit('pan');
-        }
-
-        /**
-         * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-          * @param {Object} coords
-         */
-
-    }, {
-        key: 'pan2',
-        value: function pan2() {
-            this.emit('pan2');
-        }
-
-        /**
-         * L'evento pinch non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-         *
-         * @param {Number} distance
-         */
-
-    }, {
-        key: 'pinch',
-        value: function pinch(distance) {
-            this.emit('pinch', { distance: distance });
-        }
-
-        /**
-         * L'evento rotate non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-         *
-         * @param {Number} rotation
-         */
-
-    }, {
-        key: 'rotate',
-        value: function rotate(rotation) {
-            this.emit('rotate', { rotation: rotation });
-        }
-
-        /* -------------------------------------
-         *  Bindaggio ed emissione eventi
-         * ------------------------------------- */
-
-        /**
-         * Emette un evento se settato
-         *
-         * @param {String} event Nome dell'evento da emettere
-         */
-
-    }, {
-        key: 'emit',
-        value: function emit(event, data) {
-            if (this.events[event]) {
-
-                //let result = this.events[event](data ? data : this.stateValue, data ? this.stateValue : null)
-                var result = this.events[event](this.setEventData(data));
-
-                // Prevengo la gestione degli altri eventi se - nella funzione settata dall'utente - viene restituito il booleano false
-                return result === false && this.clear();
-            }
-        }
-    }, {
-        key: 'setEventData',
-        value: function setEventData(data) {
-            var coords = void 0,
-                directions = void 0,
-                duration = void 0;
-
-            // Per l'evento tap e press
-            if (!this.ended) {
-                this.ended = this.utils.create(null);
-                coords = { x: this.started.touches[0].clientX, y: this.started.touches[0].clientY };
-            } else {
-                coords = this.utils.coords(this.started, this.ended);
-                directions = this.utils.stringDirection(coords);
-            }
-            duration = (this.ended.time - this.started.time) / 1000;
-
-            return Object.assign({}, {
-                el: this.el,
-                coords: coords,
-                directions: directions,
-                velocity: {
-                    x: coords.x / duration,
-                    y: coords.y / duration,
-                    d: this.utils.scalar(coords.x, coords.y) / duration
-                },
-                fingers: this.utils.howManyTouches(this.ended),
-                $state: this.stateValue,
-                duration: duration
-            }, data);
+            this.data.$state = this.State.set(this.data);
         }
 
         /**
@@ -557,6 +581,7 @@ var AloeTouchObject = function () {
                 return _this3.events[e] = events[e];
             });
         }
+
         /**
          * Rimuove un evento
          */
@@ -571,43 +596,15 @@ var AloeTouchObject = function () {
                 return _this4.events[e] && delete _this4.events[e];
             });
         }
-
-        /**
-         * Bindo gli eventi all'elemento
-         */
-
-    }, {
-        key: 'on',
-        value: function on(events, handler) {
-            var _this5 = this;
-
-            events.split(' ').forEach(function (e) {
-                return _this5.el.addEventListener(e, handler, true);
-            });
-        }
-
-        /**
-         * Rimuovo i listeners
-         */
-
-    }, {
-        key: 'off',
-        value: function off(events, handler, passive) {
-            var _this6 = this;
-
-            events.split(' ').forEach(function (e) {
-                return _this6.el.removeEventListener(e, handler, true);
-            });
-        }
     }]);
 
-    return AloeTouchObject;
+    return Emitter;
 }();
 
-exports.default = AloeTouchObject;
+exports.default = Emitter;
 
 /***/ }),
-/* 1 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -619,291 +616,160 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var State = {
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/* -------------------------------------
+ *  State
+ * ------------------------------------- */
+
+var State = function () {
 
     /**
-     * Crea un oggetto vuoto per il contenimento dei valori degli eventi pan, pinch e rotate
+     * Setta gli state personalizzati
      */
-    init: function init() {
-        return {
-            pan: { x: null, y: null },
-            pinch: null,
-            rotate: null
-        };
-    },
+    function State(customState) {
+        _classCallCheck(this, State);
 
+        this.customState = customState;
 
-    /**
-     * Crea un nuovo oggetto che conterra i valori precedenti degli eventi
-     */
-    create: function create() {
-        return Object.assign({}, State.init(), { $old: State.init() });
-    },
-
-
-    /**
-     * Binda i nuovi valori dall'evento corrente (chiamato da touchmove->dispatch->emit) con i valori precendenti
-     *
-     * @param {ATS} state
-     * @param {ATEvent} event
-     */
-    set: function set(state, event, customState) {
-        event.rotate && (state.rotate = event.rotate + state.$old.rotate);
-        event.pinch && (state.pinch = event.pinch + state.$old.pinch);
-        event.pan && event.pan.x && (state.pan.x = event.pan.x + state.$old.pan.x);
-        event.pan && event.pan.y && (state.pan.y = event.pan.y + state.$old.pan.y);
-
-        // Aggiungo gli state settati dall'utente
-        Object.keys(customState).forEach(function (cs) {
-            return state[cs] = customState[cs](state);
-        });
-
-        return state;
-    },
-
-
-    /**
-     * All'evento touchend setto i valori precendeti con l'ultimo settato
-     *
-     * @param {ATS} state
-     */
-    refresh: function refresh(state) {
-        state.$old = State.copyState(state);
-
-        return state;
-    },
-
-
-    /**
-     * Copio l'oggetto state
-     */
-    copyState: function copyState(state) {
-        var n = {};
-        Object.keys(state).forEach(function (k) {
-            k != '$old' && (n[k] = _typeof(state[k]) === 'object' && state[k] !== null ? State.copyState(state[k]) : state[k]);
-        });
-        return n;
+        this.old = this.empty();
+        this.values = this.empty();
     }
-};
-
-exports.default = {
-    set: State.set,
-    create: State.create,
-    refresh: State.refresh
-};
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-var Utils = {
-    /**
-     * Crea (o modifico) l'oggetto ATO (AloeTouchObject) contenente la Touchlist
-     *
-     * @param  {Event}      event
-     * @param  {DOMElement} element
-     * @param  {ATO?}       oldATO
-     */
-    create: function create(event, element, strict, oldATO) {
-        var ATO = oldATO ? Object.assign({}, oldATO, { updated: true }) : { time: Date.now() };
-        ATO.touches = event && event.touches ? Utils.getTouches(event.touches, element) : [{ clientX: 0, clientY: 0 }];
-        console.log('create', ATO, event, oldATO);
-
-        return ATO;
-    },
-
 
     /**
-     * Preleva la touchlist (modificata) dall'evento
-     *
-     * @param  {Touchlist}  touches [description]
-     * @param  {DOMElement} element L'emento esiste solo se è settato STRICT
-     * @return {Array}
+     * Ritorna uno state vuoto
+     * @return {Object}
      */
-    getTouches: function getTouches(touches, element, strict) {
-        var data = [];
 
-        Object.keys(touches).forEach(function (e) {
-            Utils.validate(touches[e], element, strict) && data.push({
-                clientX: touches[e].clientX,
-                clientY: touches[e].clientY
+
+    _createClass(State, [{
+        key: 'empty',
+        value: function empty() {
+            return {
+                pan: { x: 0, y: 0 },
+                pinch: 0,
+                rotate: 0
+            };
+        }
+
+        /**
+         * Binda i nuovi valori dall'evento corrente (chiamato da touchmove->dispatch->emit) con i valori precendenti
+         *
+         * @param {ATS} state
+         * @param {ATEvent} event
+         */
+
+    }, {
+        key: 'set',
+        value: function set(data) {
+            var _this = this;
+
+            data.rotate && (this.values.rotate = data.rotate + this.old.rotate);
+            data.pinch && (this.values.pinch = data.pinch + this.old.pinch);
+            data.pan && data.pan.x && (this.values.pan.x = data.pan.x + this.old.pan.x);
+            data.pan && data.pan.y && (this.values.pan.y = data.pan.y + this.old.pan.y);
+
+            // Aggiungo gli state settati dall'utente
+            Object.keys(this.customState).forEach(function (cs) {
+                return _this.values[cs] = _this.customState[cs](_this.values);
             });
-        });
 
-        return data;
-    },
+            return this.get();
+        }
 
+        /**
+         * Ritorna i valori dello state corrente
+         */
 
-    /**
-     * Aggiunge l'oggetto Touch se rispetta la validazone
-     *
-     * @param {Touch}      touch
-     * @param {DOMElement} element
-     */
-    validate: function validate(touch, element, strict) {
-        return touch && (touch.clientX || touch.clientY) && (!strict ? element.contains(touch.target) : element == touch.target);
-    },
+    }, {
+        key: 'get',
+        value: function get() {
+            return this.values;
+        }
 
+        /**
+         * All'evento touchend setto i valori precendeti con l'ultimo settato
+         *
+         * @param {ATS} state
+         */
 
-    /**
-     * Ritorna la differenza delle coordinate tra due ATO
-     *
-     * @param {ATO} ATOstart
-     * @param {ATO} ATOend
-     */
-    coords: function coords(ATOstart, ATOend) {
-        return Utils.diff(ATOstart.touches[0], ATOend.touches[0]);
-    },
+    }, {
+        key: 'refresh',
+        value: function refresh() {
+            this.old = this.copy(this.values);
+        }
 
+        /**
+         * Copia un oggetto
+         *
+         * @return {Object}
+         */
 
-    /**
-     * Ritorna una coordinata basata sulla differenza tra due punti
-     *
-     * @param {ATO.touch} pointA
-     * @param {ATO.touch} pointB
-     */
-    diff: function diff(pointA, pointB) {
-        return {
-            x: pointB.clientX - pointA.clientX,
-            y: pointB.clientY - pointA.clientY
-        };
-    },
+    }, {
+        key: 'copy',
+        value: function copy(d) {
+            var _this2 = this;
 
+            var n = {};
+            Object.keys(d).forEach(function (k) {
+                n[k] = _typeof(d[k]) === 'object' && d[k] !== null ? _this2.copy(d[k]) : d[k];
+            });
+            return n;
+        }
 
-    /**
-     * Ritorna il numero di touch
-     *
-     * @param {ATO} ATOe
-     */
-    howManyTouches: function howManyTouches(ATO) {
-        return ATO && ATO.touches ? ATO.touches.length : 0;
-    },
+        /**
+         * Setta uno state
+         *
+         * @param {Object} state
+         */
 
+    }, {
+        key: 'add',
+        value: function add(state) {
+            var _this3 = this;
 
-    /**
-     * Ritorna true se la differenza tra le coordinate è principalmente verticale
-     *
-     * @param {ATO} ATOstart
-     * @param {ATO} ATOend
-     */
-    isVertical: function isVertical(ATOstart, ATOend) {
-        var coords = Utils.coords(ATOstart, ATOend);
-        return Math.abs(coords.y) > Math.abs(coords.x);
-    },
+            Object.keys(state).forEach(function (s) {
+                return _this3.customState[s] = state[s];
+            });
+        }
 
+        /**
+         * Rimuove uno state
+         *
+         * @param {String} name Nome dello state da rimuovere
+         */
 
-    /**
-     * Ritorna true se la differenza tra le coordinate è principalmente orizzontale
-     *
-     * @param {ATO} ATOstart
-     * @param {ATO} ATOend
-     */
-    isHorizontal: function isHorizontal(ATOstart, ATOend) {
-        var coords = Utils.coords(ATOstart, ATOend);
-        return Math.abs(coords.x) > Math.abs(coords.y);
-    },
+    }, {
+        key: 'remove',
+        value: function remove(name) {
+            this.values[name] = null;
+            this.values[name] = null;
 
+            delete this.values[name];
+            delete this.values[name];
+        }
 
-    /**
-     * Ritorna la direzione in base al valore delle coordinate
-     *
-     * @param {Object{x,y} } coords
-     */
-    stringDirection: function stringDirection(coords) {
-        return {
-            x: coords.x <= 0 ? 'Left' : 'Right',
-            y: coords.y <= 0 ? 'Top' : 'Bottom'
-        };
-    },
+        /**
+         * Cancella lo state con ivalori correnti
+         */
 
+    }, {
+        key: 'clear',
+        value: function clear() {
+            this.values = this.empty();
+            this.old = this.empty();
+        }
+    }]);
 
-    /* -------------------------------------
-     *  Helper per eventi
-     * ------------------------------------- */
+    return State;
+}();
 
-    /**
-     * Ritorna la distanza tra due ATO
-     *
-     * @param {ATO} ATOstart
-     * @param {ATO} ATOend
-     */
-    distanceBetween: function distanceBetween(ATOstart, ATOend) {
-        console.log('distanceBetween', ATOstart, ATOend);
-        return Utils.distance(ATOend) - Utils.distance(ATOstart);
-    },
-
-
-    /**
-     * Ritorna la distanza vettoriale tra due coordinata
-     *
-     * @param {ATO} ATO
-     */
-    distance: function distance(ATO) {
-        var distance = Utils.diff(ATO.touches[0], ATO.touches[1]);
-        return Utils.scalar(distance.x, distance.y);
-    },
-
-
-    /**
-     * Distanza scalare
-     */
-    scalar: function scalar(a, b) {
-        return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-    },
-
-
-    /**
-     * Ritorna la direzione tangente tra due coordinate
-     *
-     * @param {ATO} ATO
-     */
-    direction: function direction(ATO) {
-        var distance = Utils.diff(ATO.touches[0], ATO.touches[1]);
-        return Utils.angle(distance.x, distance.y);
-    },
-
-
-    /**
-     * Angolo
-     */
-    angle: function angle(a, b) {
-        return Math.atan2(b, a) * 180 / Math.PI;
-    },
-
-
-    /**
-     * Ritorna l'angolo di rotazione tra due ATO
-     *
-     * @param {ATO} ATOstart
-     * @param {ATO} ATOend
-     */
-    rotation: function rotation(ATOstart, ATOend) {
-        return Utils.direction(ATOend) - Utils.direction(ATOstart);
-    }
-};
-
-exports.default = {
-    create: Utils.create,
-    coords: Utils.coords,
-    howManyTouches: Utils.howManyTouches,
-    isVertical: Utils.isVertical,
-    isHorizontal: Utils.isHorizontal,
-    stringDirection: Utils.stringDirection,
-    distanceBetween: Utils.distanceBetween,
-    direction: Utils.direction,
-    rotation: Utils.rotation,
-    angle: Utils.angle,
-    scalar: Utils.scalar
-};
+exports.default = State;
 
 /***/ }),
-/* 3 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -913,7 +779,177 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _AloeTouchObject = __webpack_require__(0);
+var _constants = __webpack_require__(9);
+
+/* -------------------------------------
+ *  Eventi
+ * ------------------------------------- */
+
+/**
+ * Lista di tutti gli eventi gestibili
+ * @type {Array<String>}
+ */
+var events = ['start', 'move', 'end', // Eventi speciali
+'tap', 'dbltap', 'press', 'swipe', 'swipeTop', 'swipeBottom', 'swipeLeft', 'swipeRight', 'pan', // Eventi un solo dito
+'pan2', 'pinch', 'rotate' // Eventi due dita
+];
+
+exports.default = {
+
+  /**
+   * Richiama gli altri eventi
+   */
+  emit: function emit(event, values, callback) {
+    if (events.indexOf(event) >= 0 && this[event] && callback) {
+      var result = this[event](values, callback);
+      return result === false ? false : true;
+    }
+  },
+
+
+  /**
+   * Special Event
+   */
+  start: function start(values, callback) {
+    return callback();
+  },
+
+
+  /**
+   * Special Event
+   */
+  move: function move(values, callback) {
+    return callback(values);
+  },
+
+
+  /**
+   * Special Event
+   */
+  end: function end(values, callback) {
+    return callback(values);
+  },
+
+
+  /**
+   * Valido l'evento Tap
+   */
+  tap: function tap(values, callback) {
+    if (Date.now() - values.started.time < _constants.ALOETOUCH_PRESS_MIN_TIME) return callback();
+  },
+
+
+  /**
+   * Evento doppio tap
+   * ( Validazione nell'Emitter )
+   */
+  dbltap: function dbltap(values, callback) {
+    return callback();
+  },
+
+
+  /**
+   * Evento press
+   * ( Validazione nell'Emitter )
+   */
+  press: function press(values, callback) {
+    return callback();
+  },
+
+
+  /**
+   * Valido l'evento swipe
+   */
+  swipe: function swipe(values, callback) {
+    var coords = values.pan;
+    var directions = Utils.stringDirection(coords);
+
+    if (Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE || Math.abs(coords.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords, directions: directions }, values);
+  },
+
+
+  /**
+  * Valido l'evento swipeLeft
+  */
+  swipeLeft: function swipeLeft(values, callback) {
+    if (Math.abs(values.pan.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+  },
+
+
+  /**
+   * Valido l'evento swipeRight
+   */
+  swipeRight: function swipeRight(values, callback) {
+    if (Math.abs(values.pan.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+  },
+
+
+  /**
+   * Valido l'evento swipeTop
+   */
+  swipeTop: function swipeTop(values, callback) {
+    if (Math.abs(values.pan.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+  },
+
+
+  /**
+   * Valido l'evento swipeBottom
+   */
+  swipeBottom: function swipeBottom(values, callback) {
+    if (Math.abs(values.pan.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+  },
+
+
+  /**
+   * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+    * @param {Object} coords
+   */
+  pan: function pan(values, callback) {
+    return callback(values.pan, values);
+  },
+
+
+  /**
+   * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+    * @param {Object} coords
+   */
+  pan2: function pan2(values, callback) {
+    return callback(values.pan, values);
+  },
+
+
+  /**
+   * L'evento pinch non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+   *
+   * @param {Number} distance
+   */
+  pinch: function pinch(values, callback) {
+    return callback(values.pinch, values);
+  },
+
+
+  /**
+   * L'evento rotate non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+   *
+   * @param {Number} rotation
+   */
+  rotate: function rotate(values, callback) {
+    return callback(values.rotation, values);
+  }
+};
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _AloeTouchObject = __webpack_require__(8);
 
 var _AloeTouchObject2 = _interopRequireDefault(_AloeTouchObject);
 
@@ -948,31 +984,9 @@ var AloeTouch = {
   bind: function bind(element, events, strict) {
     var id = ++AloeTouch.length;
 
-    return AloeTouch.list[id] = {
-      $id: id, // id dell'oggetto
-      attach: AloeTouch.caller('attach'), // Binda un evento
-      detach: AloeTouch.caller('detach'), // Rimuovo il listener di un evento
-      setState: AloeTouch.caller('setState'), // Setta uno stato personalizzato
-      getState: AloeTouch.caller('getState'), // Setta uno stato personalizzato
-      removeState: AloeTouch.caller('removeState'), // Rimuove uno state
-      clearState: AloeTouch.caller('clearState'), // Azzera la variabile state
-      isLock: AloeTouch.caller('isLock'), // Rimuove i listener per tutti gli eventi
-      lock: AloeTouch.caller('lock'), // Rimuove i listener per tutti gli eventi
-      unlock: AloeTouch.caller('unlock'), // Rebinda i listener per gli eventii
-      $ref: new _AloeTouchObject2.default(id, element, events, strict) // refrenza all'oggetto
-    };
-  },
+    AloeTouch.list[id] = new _AloeTouchObject2.default(id, element, events, strict).public;
 
-
-  /**
-   * Chiama una funzione bindando il riferimento dell'oggetto chimante
-   * @param  {String} fn
-   * @return {Function}
-   */
-  caller: function caller(fn) {
-    return function (data) {
-      this.$ref && this.$ref[fn](data);
-    };
+    return AloeTouch.list[id];
   },
 
 
@@ -1111,6 +1125,276 @@ var AloeTouch = {
 };
 
 exports.default = AloeTouch;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _constants = __webpack_require__(9);
+
+var _Utils = __webpack_require__(0);
+
+var _Dispatcher = __webpack_require__(3);
+
+var _Dispatcher2 = _interopRequireDefault(_Dispatcher);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Assegna gli eventi touch ad un elemento
+ *
+ * GLi eventi disponibili sono:
+ * Touch singolo
+ *     tap, dbltap, press, pan, swipe, swipeLeft, swipeRight, swipeTop, swipeBottom
+ * Touch doppio
+ *     pan2, pinch, rotate
+ */
+var AloeTouchObject = function () {
+
+    /**
+     * Binda gli eventi all'elemento
+     * @param {DomElement} element
+     * @param {Object} events Oggetto che contiene le funzioni es. { tap: ..., swipeLeft: ..., rotate: ... }
+     * @param {Boolean} strict Aggiunge le coordinate del tuoch solo se il target è uguale all'elemento bindato
+     */
+    function AloeTouchObject(id, element, events, strict) {
+        _classCallCheck(this, AloeTouchObject);
+
+        this.id = id;
+        this.el = typeof element === 'string' ? document.querySelector(element) : element;
+        this.strict = !!strict;
+        this.locked = true;
+
+        this.Dispatcher = new _Dispatcher2.default(id, this.el, events);
+
+        this.start = this.start.bind(this);
+        this.move = this.move.bind(this);
+        this.finish = this.finish.bind(this);
+
+        this.unlock();
+
+        this.public = this.getPublicMethods();
+    }
+
+    /**
+     * Eventi 'touchstart' 'mousedown'
+     */
+
+
+    _createClass(AloeTouchObject, [{
+        key: 'start',
+        value: function start(event) {
+            !this.locked && this.Dispatcher.start(event, (0, _Utils.getTouches)(event, this.el, this.strict));
+        }
+
+        /**
+         * Eventi 'touchmove'
+         */
+
+    }, {
+        key: 'move',
+        value: function move(event) {
+            if (!this.locked && this.Dispatcher.isStarted() && this.Dispatcher.end(event, (0, _Utils.getTouches)(event, this.el, this.strict)) && this.isPermissible(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                this.Dispatcher.dispatch();
+            } else {
+                this.Dispatcher.clear();
+            }
+        }
+
+        /**
+         * Questa funzionalitò è molto importante poiché previene che l'evento 'touchmove'
+         * prevenga l'azione di default dell'evento (e quindi blocchi lo scrolling)
+         */
+
+    }, {
+        key: 'isPermissible',
+        value: function isPermissible(event) {
+            var time = Date.now() - this.Dispatcher.started.time;
+            var _isHorizontal = (0, _Utils.isHorizontal)(this.Dispatcher.started, this.Dispatcher.ended); // Se lo scrolling è orizzontale implica che l'utente non sta scorrendo
+            // verticalmente la pagina, quindi è possibile bloccare lo scrolling
+            return event.cancelable && (_isHorizontal || time > _constants.ALOETOUCH_MIN_TIME);
+        }
+
+        /**
+         * Termino l'evento
+         */
+
+    }, {
+        key: 'finish',
+        value: function finish(event) {
+            !this.locked && this.Dispatcher.isStarted() && this.Dispatcher.dispatch(true);
+        }
+
+        /**
+         * Ritorna vero se questo oggetto è bloccato, falso altrimenti
+         *
+         * @return {Boolean}
+         */
+
+    }, {
+        key: 'isLock',
+        value: function isLock() {
+            return this.locked;
+        }
+
+        /**
+         * Rimuove i listener degli eventi
+         */
+
+    }, {
+        key: 'lock',
+        value: function lock() {
+            if (!this.locked) {
+                this.off('touchstart', this.start);
+                this.off('touchmove', this.move);
+                this.off('touchend touchcancel', this.finish);
+                this.locked = true;
+            }
+        }
+
+        /**
+         * Binda gli eventi
+         */
+
+    }, {
+        key: 'unlock',
+        value: function unlock() {
+            if (this.locked) {
+                this.on('touchstart', this.start);
+                this.on('touchmove', this.move);
+                this.on('touchend touchcancel', this.finish);
+                this.locked = false;
+            }
+        }
+
+        /**
+         * Bindo gli eventi all'elemento
+         */
+
+    }, {
+        key: 'on',
+        value: function on(events, handler) {
+            var _this = this;
+
+            events.split(' ').forEach(function (e) {
+                return _this.el.addEventListener(e, handler, true);
+            });
+        }
+
+        /**
+         * Rimuovo i listeners
+         */
+
+    }, {
+        key: 'off',
+        value: function off(events, handler) {
+            var _this2 = this;
+
+            events.split(' ').forEach(function (e) {
+                return _this2.el.removeEventListener(e, handler, true);
+            });
+        }
+
+        /**
+         * Helper per una chiamata più semplice alle funzioni
+         */
+
+    }, {
+        key: 'getPublicMethods',
+        value: function getPublicMethods() {
+            var ato = this;
+
+            return {
+                el: this.el,
+                $id: this.id,
+
+                attach: function attach(events) {
+                    ato.Dispatcher.Emitter.attach(events);
+                },
+                detach: function detach(events) {
+                    ato.Dispatcher.Emitter.detach(events);
+                },
+                getState: function getState() {
+                    ato.Dispatcher.Emitter.State.get();
+                },
+                clearState: function clearState() {
+                    ato.Dispatcher.Emitter.State.clear();
+                },
+                addState: function addState(state) {
+                    ato.Dispatcher.Emitter.State.add(state);
+                },
+                removeState: function removeState(name) {
+                    ato.Dispatcher.Emitter.State.remove(name);
+                },
+                lock: function lock() {
+                    ato.lock;
+                },
+                unlock: function unlock() {
+                    ato.unlock;
+                },
+                isLock: function isLock() {
+                    ato.isLock();
+                },
+
+
+                $ref: this
+            };
+        }
+    }]);
+
+    return AloeTouchObject;
+}();
+
+exports.default = AloeTouchObject;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/**
+ * La durata minimina per bindare un evento
+ * Utile a non prevenire lo scrolling
+ * @type {Number}
+ */
+var ALOETOUCH_MIN_TIME = exports.ALOETOUCH_MIN_TIME = 80;
+
+/**
+ * Tempo minimo per bindare l'evento press
+ * @type {Number}
+ */
+var ALOETOUCH_PRESS_MIN_TIME = exports.ALOETOUCH_PRESS_MIN_TIME = 600;
+
+/**
+ * Distanza minima per bindare l'evento swipe[Direction]
+ * @type {Number}
+ */
+var ALOETOUCH_MIN_SWIPE_DISTANCE = exports.ALOETOUCH_MIN_SWIPE_DISTANCE = 20;
+
+/**
+ * Distanza tra due Tap per bindare l'evento Double Tap
+ * @type {Number}
+ */
+var ALOETOUCH_DBL_TAP_TIME = exports.ALOETOUCH_DBL_TAP_TIME = 200;
 
 /***/ })
 /******/ ]);
