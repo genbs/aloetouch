@@ -258,518 +258,7 @@ function rotation(ATOstart, ATOend) {
 }
 
 /***/ }),
-/* 1 */,
-/* 2 */,
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _constants = __webpack_require__(9);
-
-var _Utils = __webpack_require__(0);
-
-var _Emitter = __webpack_require__(4);
-
-var _Emitter2 = _interopRequireDefault(_Emitter);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Dispatcher - smistare gli eventi
- */
-var Dispatcher = function () {
-
-    /**
-     * Binda l'Emtitter che chiamerà gli eventi
-     */
-    function Dispatcher(id, element, events) {
-        _classCallCheck(this, Dispatcher);
-
-        this.Emitter = new _Emitter2.default(id, element, events || {});
-        this.started = null;
-        this.ended = null;
-        this.lastTap = null;
-    }
-
-    /**
-     * Setta l'evento iniziale
-     * Binderà l'evento press nel caso in cui l'utente non rilascerà o muoverà l'elemento
-     */
-
-
-    _createClass(Dispatcher, [{
-        key: 'start',
-        value: function start(event, touches) {
-            if (!event.cancelable) return this.clear();
-
-            !this.started ? this.started = { time: Date.now(), touches: touches } : this.started.touches = touches;
-
-            var _fingers = (0, _Utils.fingers)(this.started);
-
-            if (_fingers) {
-                this.Emitter.prepare(this.started);
-                this.Emitter.emitBefore('press', _constants.ALOETOUCH_PRESS_MIN_TIME);
-                this.Emitter.emit('start');
-
-                _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
-            }
-        }
-
-        /**
-         * Ritorna vero se l'evento è stato inizializzato correttamente
-         */
-
-    }, {
-        key: 'isStarted',
-        value: function isStarted() {
-            return !!this.started;
-        }
-
-        /**
-         * Setta il punto corrente ( richiamato dalla gestore dell'evento touchmove: AloeTouchObject@move )
-         */
-
-    }, {
-        key: 'end',
-        value: function end(event, touches) {
-            this.ended = { time: Date.now(), touches: touches };
-
-            return (0, _Utils.fingers)(this.started) == (0, _Utils.fingers)(this.ended);
-        }
-
-        /**
-         * Smisto gli eventi in 'touchmove' in base al numero di tocchi in base alla tipologia dell'evento
-         *
-         * @param {Boolean} final Questo valore è settato a true se questa funzione è chiamanta dall'evento touchend o touchcancel
-         */
-
-    }, {
-        key: 'dispatch',
-        value: function dispatch(final) {
-            var _fingers = (0, _Utils.fingers)(this.ended);
-
-            this.Emitter.prepare(this.started, this.ended, _fingers, !!final);
-
-            final ? this.dispatchFinalEvents(!!this.ended) : this.dispatchMovedEvents(_fingers); // Smisto al tipo di eventi
-        }
-
-        /**
-         * Gestione degli eventi che non richiedono movimento
-         */
-
-    }, {
-        key: 'dispatchFinalEvents',
-        value: function dispatchFinalEvents(move) {
-            move ? this.Emitter.emit('swipe') : this.dispatchTap();
-
-            this.clear();
-        }
-
-        /**
-         * Gestione degli eventi con movimento
-         */
-
-    }, {
-        key: 'dispatchMovedEvents',
-        value: function dispatchMovedEvents(_fingers) {
-            this.Emitter.clearBefore('press'); // l'evento press non è più valido se l'utente si muove sull'elemento
-
-            // Smisto gli eventi in base al numero dei tocchi
-            if (_fingers == 1) this.Emitter.emit('pan');else if (_fingers == 2) {
-                this.Emitter.emit('pan2');
-                this.Emitter.emit('pinch');
-                this.Emitter.emit('rotate');
-            }
-
-            this.Emitter.emit('move'); // Chiamo l'evento speciale 'move' in ogni caso
-        }
-
-        /**
-         * Gestione dell'evento particolare 'tap' e 'dbltap'
-         */
-
-    }, {
-        key: 'dispatchTap',
-        value: function dispatchTap() {
-            var _this = this;
-
-            if (!this.lastTap) {
-                this.lastTap = this.started.time;
-                this.Emitter.emitBefore('tap', _constants.ALOETOUCH_DBL_TAP_TIME, function () {
-                    return _this.lastTap = null;
-                });
-            } else if (this.started.time - this.lastTap < _constants.ALOETOUCH_DBL_TAP_TIME) {
-                this.Emitter.clearBefore('tap');
-                this.Emitter.emit('dbltap');
-                this.lastTap = null;
-            }
-        }
-
-        /**
-         * Reset delle variabili
-         */
-
-    }, {
-        key: 'clear',
-        value: function clear() {
-            this.started = null;
-            this.ended = null;
-
-            this.Emitter.clearBefore('press');
-            this.Emitter.State.refresh();
-        }
-    }]);
-
-    return Dispatcher;
-}();
-
-exports.default = Dispatcher;
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Utils = __webpack_require__(0);
-
-var _Events = __webpack_require__(6);
-
-var _Events2 = _interopRequireDefault(_Events);
-
-var _State = __webpack_require__(5);
-
-var _State2 = _interopRequireDefault(_State);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/* -------------------------------------
- *  Bindaggio ed emissione eventi
- * ------------------------------------- */
-
-var Emitter = function () {
-
-    /**
-     * Gestore degli eventi e relativi argomenti
-     */
-    function Emitter(id, el, events) {
-        _classCallCheck(this, Emitter);
-
-        this.events = events;
-        this.State = new _State2.default(events.state || {});
-
-        this.initialData = { id: id, el: el };
-        this.before = {};
-
-        this.detach('state');
-    }
-
-    /**
-     * Emette un evento se settato
-     *
-     * @param {String} event Nome dell'evento da emettere
-     */
-
-
-    _createClass(Emitter, [{
-        key: 'emit',
-        value: function emit(event) {
-            if (_Events2.default.emit(event, this.data, this.events[event], this.data.started.time) === false) this.detach(event);
-        }
-
-        /**
-         * Emette un evento dopo un certo 'delay'
-         *
-         * @param {String}     event Nome dell'evento da emettere
-         * @param {Int}        delay Millisecondi da ritardare
-         * @param {Callable?}  callback Funzione da chiamare dopo il delay
-         */
-
-    }, {
-        key: 'emitBefore',
-        value: function emitBefore(event, delay, callback) {
-            var _this = this;
-
-            this.clearBefore(event);
-
-            this.before[event] = window.setTimeout(function () {
-                _this.emit(event);
-                callback && callback();
-            }, delay);
-        }
-
-        /**
-         * Rimuove un evento da ritardare
-         *
-         * @param {String?} event Nome dell'evento da rimuovere. Se non settato, verranno rimossi tutti.
-         */
-
-    }, {
-        key: 'clearBefore',
-        value: function clearBefore(event) {
-            var _this2 = this;
-
-            if (typeof event === 'undefined') Object.keys(this.before).forEach(function (e) {
-                return _this2.clearBefore(e);
-            });else {
-                this.before[event] && window.clearTimeout(this.before[event]);
-                this.before[event] = null;
-                delete this.before[event];
-            }
-        }
-
-        /**
-         * Prepare i dati da inviare agli eventi
-         */
-
-    }, {
-        key: 'prepare',
-        value: function prepare(started, ended, fingers, final) {
-            this.data = { started: started, ended: ended, fingers: fingers, final: final };
-
-            this.data.id = this.initialData.id;
-            this.data.el = this.initialData.el;
-
-            !final && this.setStateData(started, ended, fingers); // Setta lo state se si sta 'preparando' un evento non finale
-        }
-
-        /**
-         * Prepara la variabile che conterrà lo 'state'
-         */
-
-    }, {
-        key: 'setStateData',
-        value: function setStateData(started, ended, fingers) {
-            if (fingers == 1) this.data.pan = (0, _Utils.coords)(started, ended);else if (fingers == 2) {
-                this.data.pan = (0, _Utils.coords)(started, ended);
-                this.data.pinch = (0, _Utils.distanceBetween)(started, ended);
-                this.data.rotate = (0, _Utils.rotation)(started, ended);
-            }
-
-            this.data.$state = this.State.set(this.data);
-        }
-
-        /**
-         * Aggiunge un evento
-         */
-
-    }, {
-        key: 'attach',
-        value: function attach(events) {
-            var _this3 = this;
-
-            Object.keys(events).forEach(function (e) {
-                return _this3.events[e] = events[e];
-            });
-        }
-
-        /**
-         * Rimuove un evento
-         */
-
-    }, {
-        key: 'detach',
-        value: function detach(events) {
-            var _this4 = this;
-
-            events = events.constructor.name === 'Array' ? events : [events];
-            events.forEach(function (e) {
-                return _this4.events[e] && delete _this4.events[e];
-            });
-        }
-    }]);
-
-    return Emitter;
-}();
-
-exports.default = Emitter;
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/* -------------------------------------
- *  State
- * ------------------------------------- */
-
-var State = function () {
-
-    /**
-     * Setta gli state personalizzati
-     */
-    function State(customState) {
-        _classCallCheck(this, State);
-
-        this.customState = customState;
-
-        this.old = this.empty();
-        this.values = this.empty();
-    }
-
-    /**
-     * Ritorna uno state vuoto
-     * @return {Object}
-     */
-
-
-    _createClass(State, [{
-        key: 'empty',
-        value: function empty() {
-            return {
-                pan: { x: 0, y: 0 },
-                pinch: 0,
-                rotate: 0
-            };
-        }
-
-        /**
-         * Binda i nuovi valori dall'evento corrente (chiamato da touchmove->dispatch->emit) con i valori precendenti
-         *
-         * @param {ATS} state
-         * @param {ATEvent} event
-         */
-
-    }, {
-        key: 'set',
-        value: function set(data) {
-            var _this = this;
-
-            data.rotate && (this.values.rotate = data.rotate + this.old.rotate);
-            data.pinch && (this.values.pinch = data.pinch + this.old.pinch);
-            data.pan && data.pan.x && (this.values.pan.x = data.pan.x + this.old.pan.x);
-            data.pan && data.pan.y && (this.values.pan.y = data.pan.y + this.old.pan.y);
-
-            // Aggiungo gli state settati dall'utente
-            Object.keys(this.customState).forEach(function (cs) {
-                return _this.values[cs] = _this.customState[cs](_this.values);
-            });
-
-            return this.get();
-        }
-
-        /**
-         * Ritorna i valori dello state corrente
-         */
-
-    }, {
-        key: 'get',
-        value: function get() {
-            return this.values;
-        }
-
-        /**
-         * All'evento touchend setto i valori precendeti con l'ultimo settato
-         *
-         * @param {ATS} state
-         */
-
-    }, {
-        key: 'refresh',
-        value: function refresh() {
-            this.old = this.copy(this.values);
-        }
-
-        /**
-         * Copia un oggetto
-         *
-         * @return {Object}
-         */
-
-    }, {
-        key: 'copy',
-        value: function copy(d) {
-            var _this2 = this;
-
-            var n = {};
-            Object.keys(d).forEach(function (k) {
-                n[k] = _typeof(d[k]) === 'object' && d[k] !== null ? _this2.copy(d[k]) : d[k];
-            });
-            return n;
-        }
-
-        /**
-         * Setta uno state
-         *
-         * @param {Object} state
-         */
-
-    }, {
-        key: 'add',
-        value: function add(state) {
-            var _this3 = this;
-
-            Object.keys(state).forEach(function (s) {
-                return _this3.customState[s] = state[s];
-            });
-        }
-
-        /**
-         * Rimuove uno state
-         *
-         * @param {String} name Nome dello state da rimuovere
-         */
-
-    }, {
-        key: 'remove',
-        value: function remove(name) {
-            this.values[name] = null;
-            this.values[name] = null;
-
-            delete this.values[name];
-            delete this.values[name];
-        }
-
-        /**
-         * Cancella lo state con ivalori correnti
-         */
-
-    }, {
-        key: 'clear',
-        value: function clear() {
-            this.values = this.empty();
-            this.old = this.empty();
-        }
-    }]);
-
-    return State;
-}();
-
-exports.default = State;
-
-/***/ }),
-/* 6 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -778,356 +267,33 @@ exports.default = State;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _constants = __webpack_require__(9);
-
-/* -------------------------------------
- *  Eventi
- * ------------------------------------- */
+/**
+ * La durata minimina per bindare un evento
+ * Utile a non prevenire lo scrolling
+ * @type {Number}
+ */
+var ALOETOUCH_MIN_TIME = exports.ALOETOUCH_MIN_TIME = 80;
 
 /**
- * Lista di tutti gli eventi gestibili
- * @type {Array<String>}
+ * Tempo minimo per bindare l'evento press
+ * @type {Number}
  */
-var events = ['start', 'move', 'end', // Eventi speciali
-'tap', 'dbltap', 'press', 'swipe', 'swipeTop', 'swipeBottom', 'swipeLeft', 'swipeRight', 'pan', // Eventi un solo dito
-'pan2', 'pinch', 'rotate' // Eventi due dita
-];
-
-exports.default = {
-
-  /**
-   * Richiama gli altri eventi
-   */
-  emit: function emit(event, values, callback) {
-    if (events.indexOf(event) >= 0 && this[event] && callback) {
-      var result = this[event](values, callback);
-      return result === false ? false : true;
-    }
-  },
-
-
-  /**
-   * Special Event
-   */
-  start: function start(values, callback) {
-    return callback();
-  },
-
-
-  /**
-   * Special Event
-   */
-  move: function move(values, callback) {
-    return callback(values);
-  },
-
-
-  /**
-   * Special Event
-   */
-  end: function end(values, callback) {
-    return callback(values);
-  },
-
-
-  /**
-   * Valido l'evento Tap
-   */
-  tap: function tap(values, callback) {
-    if (Date.now() - values.started.time < _constants.ALOETOUCH_PRESS_MIN_TIME) return callback();
-  },
-
-
-  /**
-   * Evento doppio tap
-   * ( Validazione nell'Emitter )
-   */
-  dbltap: function dbltap(values, callback) {
-    return callback();
-  },
-
-
-  /**
-   * Evento press
-   * ( Validazione nell'Emitter )
-   */
-  press: function press(values, callback) {
-    return callback();
-  },
-
-
-  /**
-   * Valido l'evento swipe
-   */
-  swipe: function swipe(values, callback) {
-    var coords = values.pan;
-    var directions = Utils.stringDirection(coords);
-
-    if (Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE || Math.abs(coords.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords, directions: directions }, values);
-  },
-
-
-  /**
-  * Valido l'evento swipeLeft
-  */
-  swipeLeft: function swipeLeft(values, callback) {
-    if (Math.abs(values.pan.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
-  },
-
-
-  /**
-   * Valido l'evento swipeRight
-   */
-  swipeRight: function swipeRight(values, callback) {
-    if (Math.abs(values.pan.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
-  },
-
-
-  /**
-   * Valido l'evento swipeTop
-   */
-  swipeTop: function swipeTop(values, callback) {
-    if (Math.abs(values.pan.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
-  },
-
-
-  /**
-   * Valido l'evento swipeBottom
-   */
-  swipeBottom: function swipeBottom(values, callback) {
-    if (Math.abs(values.pan.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
-  },
-
-
-  /**
-   * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-    * @param {Object} coords
-   */
-  pan: function pan(values, callback) {
-    return callback(values.pan, values);
-  },
-
-
-  /**
-   * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-    * @param {Object} coords
-   */
-  pan2: function pan2(values, callback) {
-    return callback(values.pan, values);
-  },
-
-
-  /**
-   * L'evento pinch non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-   *
-   * @param {Number} distance
-   */
-  pinch: function pinch(values, callback) {
-    return callback(values.pinch, values);
-  },
-
-
-  /**
-   * L'evento rotate non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-   *
-   * @param {Number} rotation
-   */
-  rotate: function rotate(values, callback) {
-    return callback(values.rotation, values);
-  }
-};
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _AloeTouchObject = __webpack_require__(8);
-
-var _AloeTouchObject2 = _interopRequireDefault(_AloeTouchObject);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var ALOETOUCH_PRESS_MIN_TIME = exports.ALOETOUCH_PRESS_MIN_TIME = 600;
 
 /**
- * AloeTouch
+ * Distanza minima per bindare l'evento swipe[Direction]
+ * @type {Number}
  */
-var AloeTouch = {
+var ALOETOUCH_MIN_SWIPE_DISTANCE = exports.ALOETOUCH_MIN_SWIPE_DISTANCE = 20;
 
-  /**
-   * Contiene il numero di elementi
-   *
-   * @type {Number}
-   */
-  length: 0,
-
-  /**
-   * Lista degli AloeTouchObject
-   *
-   * @type {Object}
-   */
-  list: {},
-
-  /**
-   * Binda un nuovo elemento
-   *
-   * @param {DOMElement} element Elemento da bindare
-   * @param {Object}     events  Eventi da assegnare all'elemento
-   * @param {Boolean}    strict  Se settata, valida l'evento solo se il target del touch è l'elemento bindato
-   */
-  bind: function bind(element, events, strict) {
-    var id = ++AloeTouch.length;
-
-    AloeTouch.list[id] = new _AloeTouchObject2.default(id, element, events, strict).public;
-
-    return AloeTouch.list[id];
-  },
-
-
-  /**
-   * Rimuove i listener ad un elemento
-   *
-   * @param {AloeTouchObject or Numer} aloetouchobject
-   * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
-   */
-  unbind: function unbind(aloetouchobject) {
-    var id = this.getIds(aloetouchobject, true);
-
-    if (id) {
-      AloeTouch.list[id].lock();
-      delete AloeTouch.list[id].$ref;
-      delete AloeTouch.list[id];
-      return true;
-    }
-
-    return false;
-  },
-
-
-  /**
-   * Ritorna un elemento in base al suo id
-   *
-   * @param {Number} id
-   */
-  get: function get(id) {
-    return AloeTouch.list.hasOwnProperty(id) ? AloeTouch.list[id] : null;
-  },
-
-
-  /**
-   * Ritorna un' array di id
-   *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
-   * @param {Boolean} flag Ritorna un id se l'array ha lunghezza pari a uno
-   * @return {Array<Number> or Number}
-   */
-  getIds: function getIds(aloetouchobjects, flag) {
-    aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects];
-    aloetouchobjects = aloetouchobjects.map(function (ato) {
-      return typeof ato === 'number' ? AloeTouch.get(ato) ? ato : null : ato.$ref ? ato.$id : null;
-    });
-    aloetouchobjects = aloetouchobjects.filter(function (id) {
-      return !!id;
-    });
-
-    return flag ? aloetouchobjects.length == 1 ? aloetouchobjects[0] : aloetouchobjects : aloetouchobjects;
-  },
-
-
-  /**
-   * Blocca un oggetto singolo o tutti
-   *
-   * @param {Number?} id Blocca gli eventi per l'oggetto con id 'id'
-   */
-  lock: function lock(id) {
-    id ? AloeTouch.list[id].lock() : AloeTouch.map(function (ato) {
-      return ato.lock();
-    });
-  },
-
-
-  /**
-   *  Blocca tutti gli oggetti tranne quelli presenti nell'array aloetouchobjects
-   *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
-   */
-  lockExcept: function lockExcept(aloetouchobjects) {
-    ids = this.getIds(ids) || [];
-
-    AloeTouch.map(function (ato, id) {
-      return ato[ids.indexOf(id) == -1 ? 'unlock' : 'lock']();
-    });
-  },
-
-
-  /**
-   * Blocca solo gli oggetti presenti in aloetouchobjects
-   *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
-   */
-  lockOnly: function lockOnly(aloetouchobjects) {
-    ids = this.getIds(ids) || [];
-
-    AloeTouch.map(function (ato, id) {
-      return ato[ids.indexOf(id) >= 0 ? 'lock' : 'unlock']();
-    });
-  },
-
-
-  /**
-   * Abilita li eventi ad un oggetto singolo o tutti
-   *
-   * @param {Number?} id
-   */
-  unlock: function unlock(id) {
-    id ? AloeTouch.list[id].unlock() : AloeTouch.map(function (ato) {
-      return ato.unlock();
-    });
-  },
-
-
-  /**
-   * Abilita gli eventi tranne agli elementi presenti nell'array aloetouchobjects
-   *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
-   */
-  unlockExcept: function unlockExcept(aloetouchobjects) {
-    AloeTouch.lockOnly(aloetouchobjects);
-  },
-
-
-  /**
-   * Abilita gli eventi solo agli elementi presenti nell'array aloetouchobjects
-   *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
-   */
-  unlockOnly: function unlockOnly(aloetouchobjects) {
-    AloeTouch.lockExcept(aloetouchobjects);
-  },
-
-
-  /**
-   * Mappa tutti li elementi bindati
-   *
-   * @param {Callable(AloeTouchObject, id)}
-   */
-  map: function map(callable) {
-    Object.keys(AloeTouch.list).forEach(function (id) {
-      return callable(AloeTouch.list[id], id);
-    });
-  }
-};
-
-exports.default = AloeTouch;
+/**
+ * Distanza tra due Tap per bindare l'evento Double Tap
+ * @type {Number}
+ */
+var ALOETOUCH_DBL_TAP_TIME = exports.ALOETOUCH_DBL_TAP_TIME = 200;
 
 /***/ }),
-/* 8 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1139,7 +305,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _constants = __webpack_require__(9);
+var _constants = __webpack_require__(1);
 
 var _Utils = __webpack_require__(0);
 
@@ -1362,7 +528,532 @@ var AloeTouchObject = function () {
 exports.default = AloeTouchObject;
 
 /***/ }),
-/* 9 */
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _constants = __webpack_require__(1);
+
+var _Utils = __webpack_require__(0);
+
+var _Emitter = __webpack_require__(4);
+
+var _Emitter2 = _interopRequireDefault(_Emitter);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Dispatcher - smistare gli eventi
+ */
+var Dispatcher = function () {
+
+    /**
+     * Binda l'Emtitter che chiamerà gli eventi
+     */
+    function Dispatcher(id, element, events) {
+        _classCallCheck(this, Dispatcher);
+
+        this.Emitter = new _Emitter2.default(id, element, events || {});
+        this.started = null;
+        this.ended = null;
+        this.lastTap = null;
+    }
+
+    /**
+     * Setta l'evento iniziale
+     * Binderà l'evento press nel caso in cui l'utente non rilascerà o muoverà l'elemento
+     */
+
+
+    _createClass(Dispatcher, [{
+        key: 'start',
+        value: function start(event, touches) {
+            if (!event.cancelable) return this.clear();
+
+            !this.started ? this.started = { time: Date.now(), touches: touches } : this.started.touches = touches;
+
+            var _fingers = (0, _Utils.fingers)(this.started);
+
+            if (_fingers) {
+                this.Emitter.prepare(this.started);
+                this.Emitter.emitBefore('press', _constants.ALOETOUCH_PRESS_MIN_TIME);
+                this.Emitter.emit('start');
+
+                _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
+            }
+        }
+
+        /**
+         * Ritorna vero se l'evento è stato inizializzato correttamente
+         */
+
+    }, {
+        key: 'isStarted',
+        value: function isStarted() {
+            return !!this.started;
+        }
+
+        /**
+         * Setta il punto corrente ( richiamato dalla gestore dell'evento touchmove: AloeTouchObject@move )
+         */
+
+    }, {
+        key: 'end',
+        value: function end(event, touches) {
+            this.ended = { time: Date.now(), touches: touches };
+
+            return (0, _Utils.fingers)(this.started) == (0, _Utils.fingers)(this.ended);
+        }
+
+        /**
+         * Smisto gli eventi in 'touchmove' in base al numero di tocchi in base alla tipologia dell'evento
+         *
+         * @param {Boolean} final Questo valore è settato a true se questa funzione è chiamanta dall'evento touchend o touchcancel
+         */
+
+    }, {
+        key: 'dispatch',
+        value: function dispatch(final) {
+            var _fingers = (0, _Utils.fingers)(this.ended);
+
+            this.Emitter.prepare(this.started, this.ended, _fingers, !!final);
+
+            final ? this.dispatchFinalEvents(!!this.ended) : this.dispatchMovedEvents(_fingers); // Smisto al tipo di eventi
+        }
+
+        /**
+         * Gestione degli eventi che non richiedono movimento
+         */
+
+    }, {
+        key: 'dispatchFinalEvents',
+        value: function dispatchFinalEvents(move) {
+            move ? this.dispatchSwipe() : this.dispatchTap();
+
+            this.clear();
+        }
+
+        /**
+         * Gestione degli eventi con movimento
+         */
+
+    }, {
+        key: 'dispatchMovedEvents',
+        value: function dispatchMovedEvents(_fingers) {
+            this.Emitter.clearBefore('press'); // l'evento press non è più valido se l'utente si muove sull'elemento
+
+            // Smisto gli eventi in base al numero dei tocchi
+            if (_fingers == 1) this.Emitter.emit('pan');else if (_fingers == 2) {
+                this.Emitter.emit('pan2');
+                this.Emitter.emit('pinch');
+                this.Emitter.emit('rotate');
+            }
+
+            this.Emitter.emit('move'); // Chiamo l'evento speciale 'move' in ogni caso
+        }
+
+        /**
+         * Gestione dell'evento particolare 'tap' e 'dbltap'
+         */
+
+    }, {
+        key: 'dispatchTap',
+        value: function dispatchTap() {
+            var _this = this;
+
+            if (!this.lastTap) {
+                this.lastTap = this.started.time;
+                this.Emitter.emitBefore('tap', _constants.ALOETOUCH_DBL_TAP_TIME, function () {
+                    return _this.lastTap = null;
+                });
+            } else if (this.started.time - this.lastTap < _constants.ALOETOUCH_DBL_TAP_TIME) {
+                this.Emitter.clearBefore('tap');
+                this.Emitter.emit('dbltap');
+                this.lastTap = null;
+            }
+        }
+
+        /**
+         * Gestione dell'evento 'swipe'
+         */
+
+    }, {
+        key: 'dispatchSwipe',
+        value: function dispatchSwipe() {
+            this.Emitter.emit('swipe');
+            this.Emitter.emit('swipeLeft');
+            this.Emitter.emit('swipeRight');
+            this.Emitter.emit('swipeTop');
+            this.Emitter.emit('swipeBottom');
+        }
+
+        /**
+         * Reset delle variabili
+         */
+
+    }, {
+        key: 'clear',
+        value: function clear() {
+            this.started = null;
+            this.ended = null;
+
+            this.Emitter.clearBefore('press');
+            this.Emitter.State.refresh();
+        }
+    }]);
+
+    return Dispatcher;
+}();
+
+exports.default = Dispatcher;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Utils = __webpack_require__(0);
+
+var _Events = __webpack_require__(6);
+
+var _Events2 = _interopRequireDefault(_Events);
+
+var _State = __webpack_require__(5);
+
+var _State2 = _interopRequireDefault(_State);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/* -------------------------------------
+ *  Bindaggio ed emissione eventi
+ * ------------------------------------- */
+
+var Emitter = function () {
+
+    /**
+     * Gestore degli eventi e relativi argomenti
+     */
+    function Emitter(id, el, events) {
+        _classCallCheck(this, Emitter);
+
+        this.events = events;
+        this.State = new _State2.default(events.state || {});
+
+        this.initialData = { id: id, el: el };
+        this.before = {};
+
+        this.detach('state');
+    }
+
+    /**
+     * Emette un evento se settato
+     *
+     * @param {String} event Nome dell'evento da emettere
+     */
+
+
+    _createClass(Emitter, [{
+        key: 'emit',
+        value: function emit(event) {
+            if (_Events2.default.emit(event, this.data, this.events[event], this.data.started.time) === false) this.detach(event);
+        }
+
+        /**
+         * Emette un evento dopo un certo 'delay'
+         *
+         * @param {String}     event Nome dell'evento da emettere
+         * @param {Int}        delay Millisecondi da ritardare
+         * @param {Callable?}  callback Funzione da chiamare dopo il delay
+         */
+
+    }, {
+        key: 'emitBefore',
+        value: function emitBefore(event, delay, callback) {
+            var _this = this;
+
+            this.clearBefore(event);
+
+            this.before[event] = window.setTimeout(function () {
+                _this.emit(event);
+                callback && callback();
+            }, delay);
+        }
+
+        /**
+         * Rimuove un evento da ritardare
+         *
+         * @param {String?} event Nome dell'evento da rimuovere. Se non settato, verranno rimossi tutti.
+         */
+
+    }, {
+        key: 'clearBefore',
+        value: function clearBefore(event) {
+            var _this2 = this;
+
+            if (typeof event === 'undefined') Object.keys(this.before).forEach(function (e) {
+                return _this2.clearBefore(e);
+            });else {
+                this.before[event] && window.clearTimeout(this.before[event]);
+                this.before[event] = null;
+                delete this.before[event];
+            }
+        }
+
+        /**
+         * Prepare i dati da inviare agli eventi
+         */
+
+    }, {
+        key: 'prepare',
+        value: function prepare(started, ended, fingers, final) {
+            this.data = { started: started, ended: ended, fingers: fingers, final: final };
+
+            this.data.id = this.initialData.id;
+            this.data.el = this.initialData.el;
+
+            this.setStateData(started, ended, fingers, final); // Setta lo state se si sta 'preparando' un evento non finale
+
+            this.data.$state = this.State.get();
+        }
+
+        /**
+         * Prepara la variabile che conterrà lo 'state'
+         */
+
+    }, {
+        key: 'setStateData',
+        value: function setStateData(started, ended, fingers, final) {
+            if (fingers == 1) this.data.pan = (0, _Utils.coords)(started, ended);else if (fingers == 2) {
+                this.data.pan = (0, _Utils.coords)(started, ended);
+                this.data.pinch = (0, _Utils.distanceBetween)(started, ended);
+                this.data.rotate = (0, _Utils.rotation)(started, ended);
+            }
+
+            !final && this.State.set(this.data);
+        }
+
+        /**
+         * Aggiunge un evento
+         */
+
+    }, {
+        key: 'attach',
+        value: function attach(events) {
+            var _this3 = this;
+
+            Object.keys(events).forEach(function (e) {
+                return _this3.events[e] = events[e];
+            });
+        }
+
+        /**
+         * Rimuove un evento
+         */
+
+    }, {
+        key: 'detach',
+        value: function detach(events) {
+            var _this4 = this;
+
+            events = events.constructor.name === 'Array' ? events : [events];
+            events.forEach(function (e) {
+                return _this4.events[e] && delete _this4.events[e];
+            });
+        }
+    }]);
+
+    return Emitter;
+}();
+
+exports.default = Emitter;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/* -------------------------------------
+ *  State
+ * ------------------------------------- */
+
+var State = function () {
+
+    /**
+     * Setta gli state personalizzati
+     */
+    function State(customState) {
+        _classCallCheck(this, State);
+
+        this.customState = customState;
+
+        this.old = this.empty();
+        this.values = this.empty();
+    }
+
+    /**
+     * Ritorna uno state vuoto
+     * @return {Object}
+     */
+
+
+    _createClass(State, [{
+        key: 'empty',
+        value: function empty() {
+            return {
+                pan: { x: 0, y: 0 },
+                pinch: 0,
+                rotate: 0
+            };
+        }
+
+        /**
+         * Binda i nuovi valori dall'evento corrente (chiamato da touchmove->dispatch->emit) con i valori precendenti
+         *
+         * @param {ATS} state
+         * @param {ATEvent} event
+         */
+
+    }, {
+        key: 'set',
+        value: function set(data) {
+            var _this = this;
+
+            data.rotate && (this.values.rotate = data.rotate + this.old.rotate);
+            data.pinch && (this.values.pinch = data.pinch + this.old.pinch);
+            data.pan && data.pan.x && (this.values.pan.x = data.pan.x + this.old.pan.x);
+            data.pan && data.pan.y && (this.values.pan.y = data.pan.y + this.old.pan.y);
+
+            // Aggiungo gli state settati dall'utente
+            Object.keys(this.customState).forEach(function (cs) {
+                return _this.values[cs] = _this.customState[cs](_this.values);
+            });
+
+            return this.get();
+        }
+
+        /**
+         * Ritorna i valori dello state corrente
+         */
+
+    }, {
+        key: 'get',
+        value: function get() {
+            return this.values;
+        }
+
+        /**
+         * All'evento touchend setto i valori precendeti con l'ultimo settato
+         *
+         * @param {ATS} state
+         */
+
+    }, {
+        key: 'refresh',
+        value: function refresh() {
+            this.old = this.copy(this.values);
+        }
+
+        /**
+         * Copia un oggetto
+         *
+         * @return {Object}
+         */
+
+    }, {
+        key: 'copy',
+        value: function copy(d) {
+            var _this2 = this;
+
+            var n = {};
+            Object.keys(d).forEach(function (k) {
+                n[k] = _typeof(d[k]) === 'object' && d[k] !== null ? _this2.copy(d[k]) : d[k];
+            });
+            return n;
+        }
+
+        /**
+         * Setta uno state
+         *
+         * @param {Object} state
+         */
+
+    }, {
+        key: 'add',
+        value: function add(state) {
+            var _this3 = this;
+
+            Object.keys(state).forEach(function (s) {
+                return _this3.customState[s] = state[s];
+            });
+        }
+
+        /**
+         * Rimuove uno state
+         *
+         * @param {String} name Nome dello state da rimuovere
+         */
+
+    }, {
+        key: 'remove',
+        value: function remove(name) {
+            this.values[name] = null;
+            this.values[name] = null;
+
+            delete this.values[name];
+            delete this.values[name];
+        }
+
+        /**
+         * Cancella lo state con ivalori correnti
+         */
+
+    }, {
+        key: 'clear',
+        value: function clear() {
+            this.values = this.empty();
+            this.old = this.empty();
+        }
+    }]);
+
+    return State;
+}();
+
+exports.default = State;
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1371,30 +1062,359 @@ exports.default = AloeTouchObject;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-/**
- * La durata minimina per bindare un evento
- * Utile a non prevenire lo scrolling
- * @type {Number}
- */
-var ALOETOUCH_MIN_TIME = exports.ALOETOUCH_MIN_TIME = 80;
+
+var _constants = __webpack_require__(1);
+
+var _Utils = __webpack_require__(0);
+
+/* -------------------------------------
+ *  Eventi
+ * ------------------------------------- */
 
 /**
- * Tempo minimo per bindare l'evento press
- * @type {Number}
+ * Lista di tutti gli eventi gestibili
+ * @type {Array<String>}
  */
-var ALOETOUCH_PRESS_MIN_TIME = exports.ALOETOUCH_PRESS_MIN_TIME = 600;
+var events = ['start', 'move', 'end', // Eventi speciali
+'tap', 'dbltap', 'press', 'swipe', 'swipeTop', 'swipeBottom', 'swipeLeft', 'swipeRight', 'pan', // Eventi un solo dito
+'pan2', 'pinch', 'rotate' // Eventi due dita
+];
+
+exports.default = {
+
+  /**
+   * Richiama gli altri eventi
+   */
+  emit: function emit(event, values, callback) {
+    if (events.indexOf(event) >= 0 && this[event] && callback) {
+      var result = this[event](values, callback);
+      return result === false ? false : true;
+    }
+  },
+
+
+  /**
+   * Special Event
+   */
+  start: function start(values, callback) {
+    return callback();
+  },
+
+
+  /**
+   * Special Event
+   */
+  move: function move(values, callback) {
+    return callback(values);
+  },
+
+
+  /**
+   * Special Event
+   */
+  end: function end(values, callback) {
+    return callback(values);
+  },
+
+
+  /**
+   * Valido l'evento Tap
+   */
+  tap: function tap(values, callback) {
+    if (Date.now() - values.started.time < _constants.ALOETOUCH_PRESS_MIN_TIME) return callback();
+  },
+
+
+  /**
+   * Evento doppio tap
+   * ( Validazione nell'Emitter )
+   */
+  dbltap: function dbltap(values, callback) {
+    return callback();
+  },
+
+
+  /**
+   * Evento press
+   * ( Validazione nell'Emitter )
+   */
+  press: function press(values, callback) {
+    return callback();
+  },
+
+
+  /**
+   * Valido l'evento swipe
+   */
+  swipe: function swipe(values, callback) {
+    var coords = values.pan;
+    var directions = (0, _Utils.stringDirection)(coords);
+
+    if (Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE || Math.abs(coords.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords, directions: directions }, values);
+  },
+
+
+  /**
+  * Valido l'evento swipeLeft
+  */
+  swipeLeft: function swipeLeft(values, callback) {
+    var coords = values.pan;
+    if (Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+  },
+
+
+  /**
+   * Valido l'evento swipeRight
+   */
+  swipeRight: function swipeRight(values, callback) {
+    var coords = values.pan;
+    if (Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+  },
+
+
+  /**
+   * Valido l'evento swipeTop
+   */
+  swipeTop: function swipeTop(values, callback) {
+    var coords = values.pan;
+    if (Math.abs(coords.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+  },
+
+
+  /**
+   * Valido l'evento swipeBottom
+   */
+  swipeBottom: function swipeBottom(values, callback) {
+    var coords = values.pan;
+    if (Math.abs(values.pan.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+  },
+
+
+  /**
+   * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+    * @param {Object} coords
+   */
+  pan: function pan(values, callback) {
+    return callback(values.pan, values);
+  },
+
+
+  /**
+   * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+    * @param {Object} coords
+   */
+  pan2: function pan2(values, callback) {
+    return callback(values.pan, values);
+  },
+
+
+  /**
+   * L'evento pinch non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+   *
+   * @param {Number} distance
+   */
+  pinch: function pinch(values, callback) {
+    return callback(values.pinch, values);
+  },
+
+
+  /**
+   * L'evento rotate non ha bisogno di validazioni, siccome sono state fatte nel metodo move
+   *
+   * @param {Number} rotation
+   */
+  rotate: function rotate(values, callback) {
+    return callback(values.rotation, values);
+  }
+};
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _AloeTouchObject = __webpack_require__(2);
+
+var _AloeTouchObject2 = _interopRequireDefault(_AloeTouchObject);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
- * Distanza minima per bindare l'evento swipe[Direction]
- * @type {Number}
+ * AloeTouch
  */
-var ALOETOUCH_MIN_SWIPE_DISTANCE = exports.ALOETOUCH_MIN_SWIPE_DISTANCE = 20;
+var AloeTouch = {
 
-/**
- * Distanza tra due Tap per bindare l'evento Double Tap
- * @type {Number}
- */
-var ALOETOUCH_DBL_TAP_TIME = exports.ALOETOUCH_DBL_TAP_TIME = 200;
+  /**
+   * Contiene il numero di elementi
+   *
+   * @type {Number}
+   */
+  length: 0,
+
+  /**
+   * Lista degli AloeTouchObject
+   *
+   * @type {Object}
+   */
+  list: {},
+
+  /**
+   * Binda un nuovo elemento
+   *
+   * @param {DOMElement} element Elemento da bindare
+   * @param {Object}     events  Eventi da assegnare all'elemento
+   * @param {Boolean}    strict  Se settata, valida l'evento solo se il target del touch è l'elemento bindato
+   */
+  bind: function bind(element, events, strict) {
+    var id = ++AloeTouch.length;
+
+    AloeTouch.list[id] = new _AloeTouchObject2.default(id, element, events, strict).public;
+
+    return AloeTouch.list[id];
+  },
+
+
+  /**
+   * Rimuove i listener ad un elemento
+   *
+   * @param {AloeTouchObject or Numer} aloetouchobject
+   * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
+   */
+  unbind: function unbind(aloetouchobject) {
+    var id = this.getIds(aloetouchobject, true);
+
+    if (id) {
+      AloeTouch.list[id].lock();
+      delete AloeTouch.list[id].$ref;
+      delete AloeTouch.list[id];
+      return true;
+    }
+
+    return false;
+  },
+
+
+  /**
+   * Ritorna un elemento in base al suo id
+   *
+   * @param {Number} id
+   */
+  get: function get(id) {
+    return AloeTouch.list.hasOwnProperty(id) ? AloeTouch.list[id] : null;
+  },
+
+
+  /**
+   * Ritorna un' array di id
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   * @param {Boolean} flag Ritorna un id se l'array ha lunghezza pari a uno
+   * @return {Array<Number> or Number}
+   */
+  getIds: function getIds(aloetouchobjects, flag) {
+    aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects];
+    aloetouchobjects = aloetouchobjects.map(function (ato) {
+      return typeof ato === 'number' ? AloeTouch.get(ato) ? ato : null : ato.$ref ? ato.$id : null;
+    });
+    aloetouchobjects = aloetouchobjects.filter(function (id) {
+      return !!id;
+    });
+
+    return flag ? aloetouchobjects.length == 1 ? aloetouchobjects[0] : aloetouchobjects : aloetouchobjects;
+  },
+
+
+  /**
+   * Blocca un oggetto singolo o tutti
+   *
+   * @param {Number?} id Blocca gli eventi per l'oggetto con id 'id'
+   */
+  lock: function lock(id) {
+    id ? AloeTouch.list[id].lock() : AloeTouch.map(function (ato) {
+      return ato.lock();
+    });
+  },
+
+
+  /**
+   *  Blocca tutti gli oggetti tranne quelli presenti nell'array aloetouchobjects
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   */
+  lockExcept: function lockExcept(aloetouchobjects) {
+    ids = this.getIds(ids) || [];
+
+    AloeTouch.map(function (ato, id) {
+      return ato[ids.indexOf(id) == -1 ? 'unlock' : 'lock']();
+    });
+  },
+
+
+  /**
+   * Blocca solo gli oggetti presenti in aloetouchobjects
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   */
+  lockOnly: function lockOnly(aloetouchobjects) {
+    ids = this.getIds(ids) || [];
+
+    AloeTouch.map(function (ato, id) {
+      return ato[ids.indexOf(id) >= 0 ? 'lock' : 'unlock']();
+    });
+  },
+
+
+  /**
+   * Abilita li eventi ad un oggetto singolo o tutti
+   *
+   * @param {Number?} id
+   */
+  unlock: function unlock(id) {
+    id ? AloeTouch.list[id].unlock() : AloeTouch.map(function (ato) {
+      return ato.unlock();
+    });
+  },
+
+
+  /**
+   * Abilita gli eventi tranne agli elementi presenti nell'array aloetouchobjects
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   */
+  unlockExcept: function unlockExcept(aloetouchobjects) {
+    AloeTouch.lockOnly(aloetouchobjects);
+  },
+
+
+  /**
+   * Abilita gli eventi solo agli elementi presenti nell'array aloetouchobjects
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   */
+  unlockOnly: function unlockOnly(aloetouchobjects) {
+    AloeTouch.lockExcept(aloetouchobjects);
+  },
+
+
+  /**
+   * Mappa tutti li elementi bindati
+   *
+   * @param {Callable(AloeTouchObject, id)}
+   */
+  map: function map(callable) {
+    Object.keys(AloeTouch.list).forEach(function (id) {
+      return callable(AloeTouch.list[id], id);
+    });
+  }
+};
+
+exports.default = AloeTouch;
 
 /***/ })
 /******/ ]);

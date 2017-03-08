@@ -78,7 +78,7 @@ export default class Dispatcher {
      */
     dispatchFinalEvents(move)
     {
-        move ? this.Emitter.emit('swipe') : this.dispatchTap()
+        move ? this.dispatchSwipe() : this.dispatchTap()
 
         this.clear()
     }
@@ -115,6 +115,18 @@ export default class Dispatcher {
             this.Emitter.emit('dbltap') 
             this.lastTap = null
         }
+    }
+
+    /**
+     * Gestione dell'evento 'swipe'
+     */
+    dispatchSwipe()
+    {
+        this.Emitter.emit('swipe')
+        this.Emitter.emit('swipeLeft')
+        this.Emitter.emit('swipeRight')
+        this.Emitter.emit('swipeTop')
+        this.Emitter.emit('swipeBottom')
     }
 
     /**

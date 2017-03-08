@@ -1,4 +1,5 @@
 import { ALOETOUCH_PRESS_MIN_TIME, ALOETOUCH_MIN_SWIPE_DISTANCE } from './constants'
+import { stringDirection } from './Utils'
 
 /* -------------------------------------
  *  Eventi
@@ -69,7 +70,7 @@ export default  {
     swipe(values, callback)
     {
         let coords = values.pan
-        let directions = Utils.stringDirection(coords)
+        let directions = stringDirection(coords)
 
         if( Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE || Math.abs(coords.y) > ALOETOUCH_MIN_SWIPE_DISTANCE )
             return callback({ coords, directions }, values)
@@ -80,7 +81,8 @@ export default  {
      */
     swipeLeft(values, callback)
     {
-        if( Math.abs(values.pan.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
+        let coords = values.pan
+        if( Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
             return callback({ coords }, values)
     },
 
@@ -89,7 +91,8 @@ export default  {
      */
     swipeRight(values, callback)
     {
-        if( Math.abs(values.pan.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
+        let coords = values.pan
+        if( Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
             return callback({ coords }, values)
     },
 
@@ -98,7 +101,8 @@ export default  {
      */
     swipeTop(values, callback)
     {
-        if( Math.abs(values.pan.y) > ALOETOUCH_MIN_SWIPE_DISTANCE )
+        let coords = values.pan
+        if( Math.abs(coords.y) > ALOETOUCH_MIN_SWIPE_DISTANCE )
             return callback({ coords }, values)
     },
 
@@ -107,6 +111,7 @@ export default  {
      */
     swipeBottom(values, callback)
     {
+        let coords = values.pan
         if( Math.abs(values.pan.y) > ALOETOUCH_MIN_SWIPE_DISTANCE )
             return callback({ coords }, values)
     },

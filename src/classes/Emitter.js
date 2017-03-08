@@ -77,13 +77,15 @@ export default class Emitter {
         this.data.id = this.initialData.id
         this.data.el = this.initialData.el
 
-        !final && this.setStateData(started, ended, fingers) // Setta lo state se si sta 'preparando' un evento non finale
+        this.setStateData(started, ended, fingers, final) // Setta lo state se si sta 'preparando' un evento non finale
+
+        this.data.$state = this.State.get()
     }
 
     /**
      * Prepara la variabile che conterrà lo 'state'
      */
-    setStateData(started, ended, fingers)
+    setStateData(started, ended, fingers, final)
     {
         if( fingers == 1 )
             this.data.pan = coords(started, ended)
@@ -93,7 +95,7 @@ export default class Emitter {
             this.data.rotate = rotation(started, ended)
         }
 
-        this.data.$state = this.State.set(this.data)
+        !final && this.State.set(this.data)
     }
 
     /**
