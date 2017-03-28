@@ -11,9 +11,9 @@ export default class Dispatcher {
     /**
      * Binda l'Emtitter che chiamerà gli eventi
      */
-    constructor(id, element, events)
+    constructor(id, element, events, ato)
     {
-        this.Emitter = new Emitter(id, element, events || {})
+        this.Emitter = new Emitter(id, element, events || {}, ato)
         this.started = null
         this.ended = null
         this.lastTap = null
@@ -25,7 +25,7 @@ export default class Dispatcher {
      */
     start(event, touches)
     {
-        if ( !event.cancelable )
+        if (!event.cancelable)
             return this.clear()
 
         !this.started ? ( this.started = { time: Date.now(), touches } ) : ( this.started.touches = touches )
@@ -79,7 +79,7 @@ export default class Dispatcher {
     dispatchFinalEvents(move)
     {
         move ? this.dispatchSwipe() : this.dispatchTap()
-
+        this.Emitter.emit('end')
         this.clear()
     }
 

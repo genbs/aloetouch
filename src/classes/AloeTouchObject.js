@@ -1,7 +1,17 @@
 import { ALOETOUCH_MIN_TIME } from '../services/constants'
-import { getTouches, isHorizontal, velocity } from '../services/Utils'
+import { getTouches, isHorizontal, isVertical, velocity } from '../services/Utils'
 
 import Dispatcher from './Dispatcher'
+
+/**
+ * Settaggi di default
+ * @type Object
+ */
+const DEFAULT_SETTINGS = {
+    strict: false,
+    onlyX: false,
+    onlyY: false
+}
 
 /**
  * Assegna gli eventi touch ad un elemento
@@ -18,16 +28,19 @@ export default class AloeTouchObject {
      * Binda gli eventi all'elemento
      * @param {DomElement} element
      * @param {Object} events Oggetto che contiene le funzioni es. { tap: ..., swipeLeft: ..., rotate: ... }
-     * @param {Boolean} strict Aggiunge le coordinate del tuoch solo se il target è uguale all'elemento bindato
+     * @param {Object<Boolean>} strict
      */
-    constructor(id, element, events, strict)
+    constructor(id, element, events, settings)
     {
         this.id = id
         this.el = typeof element === 'string' ? document.querySelector(element) : element
-        this.strict = !!strict
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, settings)
+
         this.locked = true
 
-        this.Dispatcher = new Dispatcher(id, this.el, events)
+        this.public = this.getPublicMethods()
+
+        this.Dispatcher = new Dispatcher(id, this.el, events, this.public)
 
         this.start = this.start.bind(this)
         this.move = this.move.bind(this)
@@ -35,7 +48,7 @@ export default class AloeTouchObject {
 
         this.unlock()
 
-        this.public = this.getPublicMethods()
+        this.el.style.willChange = 'transform'
     }
 
     /**
@@ -43,7 +56,7 @@ export default class AloeTouchObject {
      */
     start(event)
     {
-        !this.locked && this.Dispatcher.start( event, getTouches(event, this.el, this.strict) )
+        !this.locked && this.Dispatcher.start( event, getTouches(event, this.el, this.settings.strict) )
     }
 
     /**
@@ -54,7 +67,7 @@ export default class AloeTouchObject {
         if(
             !this.locked &&
             this.Dispatcher.isStarted() &&
-            this.Dispatcher.end(event, getTouches(event, this.el, this.strict) ) &&
+            this.Dispatcher.end(event, getTouches(event, this.el, this.settings.strict) ) &&
             this.isPermissible(event)
         ) {
             event.preventDefault()
@@ -73,9 +86,14 @@ export default class AloeTouchObject {
     isPermissible(event)
     {
         let time = Date.now() - this.Dispatcher.started.time
-        let _isHorizontal = isHorizontal(this.Dispatcher.started, this.Dispatcher.ended) // Se lo scrolling è orizzontale implica che l'utente non sta scorrendo
-                                                                                         // verticalmente la pagina, quindi è possibile bloccare lo scrolling
-        return event.cancelable && ( _isHorizontal || time > ALOETOUCH_MIN_TIME )
+        let _isHorizontal = isHorizontal(this.Dispatcher.started, this.Dispatcher.ended)
+        let _isVertical = isVertical(this.Dispatcher.started, this.Dispatcher.ended)
+
+        return event.cancelable && (
+            ( ( !this.settings.onlyX && !this.settings.onlyY && time > ALOETOUCH_MIN_TIME ) || _isHorizontal ) ||
+            ( this.settings.onlyX && _isHorizontal ) ||
+            ( this.settings.onlyY && _isVertical )
+        )
     }
 
     /**
@@ -101,9 +119,9 @@ export default class AloeTouchObject {
     lock()
     {
         if( !this.locked ) {
-            this.off('touchstart', this.start)
+            this.off('touchstart', this.start, true)
             this.off('touchmove', this.move)
-            this.off('touchend touchcancel', this.finish)
+            this.off('touchend touchcancel', this.finish, true)
             this.locked = true
         }
     }
@@ -114,9 +132,9 @@ export default class AloeTouchObject {
     unlock()
     {
         if( this.locked ) {
-            this.on('touchstart', this.start)
+            this.on('touchstart', this.start, true)
             this.on('touchmove', this.move)
-            this.on('touchend touchcancel', this.finish)
+            this.on('touchend touchcancel', this.finish, true)
             this.locked = false
         }
     }
@@ -124,9 +142,9 @@ export default class AloeTouchObject {
     /**
      * Bindo gli eventi all'elemento
      */
-    on(events, handler)
+    on(events, handler, passive)
     {
-        events.split(' ').forEach( e => this.el.addEventListener(e, handler, true) )
+        events.split(' ').forEach( e => this.el.addEventListener(e, handler, passive ? { passive: true } : true) )
     }
 
     /**
@@ -156,9 +174,9 @@ export default class AloeTouchObject {
             addState(state){ ato.Dispatcher.Emitter.State.add(state) },
             removeState(name){ ato.Dispatcher.Emitter.State.remove(name) },
 
-            lock(){ ato.lock },
-            unlock(){ ato.unlock },
-            isLock(){ ato.isLock() },
+            lock(){ ato.lock() },
+            unlock(){ ato.unlock() },
+            isLock(){ return ato.isLock() },
 
             $ref: this
         }

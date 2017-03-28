@@ -31,7 +31,7 @@ export default  {
     /**
      * Special Event
      */
-    start(values, callback){ return callback() },
+    start(values, callback){ return callback(values) },
 
     /**
      * Special Event
@@ -41,7 +41,26 @@ export default  {
     /**
      * Special Event
      */
-    end(values, callback){ return callback(values) },
+    end(values, callback){
+        let coords = values.pan
+
+        if( coords ) {
+            values.isSwipe = false
+            let directions = stringDirection(coords)
+
+            if( Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE ) {
+                values.isSwipe = true
+                values.directions ? ( values.directions.x = directions.x ) : ( values.directions = { x: directions.x } )
+            }
+
+            if( Math.abs(coords.y) > ALOETOUCH_MIN_SWIPE_DISTANCE ) {
+                values.isSwipe = true
+                values.directions ? ( values.directions.y = directions.y ) : ( values.directions = { y: directions.y } )
+            }
+        }
+
+        return callback(values)
+    },
 
     /**
      * Valido l'evento Tap

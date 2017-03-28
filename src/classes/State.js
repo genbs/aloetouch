@@ -88,6 +88,7 @@ export default class State {
     add(state)
     {
         Object.keys(state).forEach( s => this.customState[s] = state[s] )
+        this.set({})
     }
 
     /**

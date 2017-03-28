@@ -11,12 +11,13 @@ export default class Emitter {
     /**
      * Gestore degli eventi e relativi argomenti
      */
-    constructor(id, el, events)
+    constructor(id, el, events, ato)
     {
+        this.ato = ato
         this.events = events
         this.State = new State(events.state || {})
 
-        this.initialData = { id, el }
+        this.initialData = { id, el, ato }
         this.before = {}
 
         this.detach('state')
@@ -29,7 +30,7 @@ export default class Emitter {
      */
     emit(event)
     {
-        if( Events.emit(event, this.data, this.events[event], this.data.started.time) === false )
+        if( Events.emit(event, this.data, this.events[event]) === false )
             this.detach(event)
     }
 
@@ -72,10 +73,7 @@ export default class Emitter {
      */
     prepare(started, ended, fingers, final)
     {
-        this.data = { started, ended, fingers, final }
-
-        this.data.id = this.initialData.id
-        this.data.el = this.initialData.el
+        this.data = Object.assign({}, this.initialData, { started, ended, fingers, final })
 
         this.setStateData(started, ended, fingers, final) // Setta lo state se si sta 'preparando' un evento non finale
 
@@ -94,7 +92,6 @@ export default class Emitter {
             this.data.pinch = distanceBetween(started, ended)
             this.data.rotate = rotation(started, ended)
         }
-
         !final && this.State.set(this.data)
     }
 

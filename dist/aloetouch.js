@@ -272,7 +272,7 @@ Object.defineProperty(exports, "__esModule", {
  * Utile a non prevenire lo scrolling
  * @type {Number}
  */
-var ALOETOUCH_MIN_TIME = exports.ALOETOUCH_MIN_TIME = 80;
+var ALOETOUCH_MIN_TIME = exports.ALOETOUCH_MIN_TIME = 100;
 
 /**
  * Tempo minimo per bindare l'evento press
@@ -284,7 +284,7 @@ var ALOETOUCH_PRESS_MIN_TIME = exports.ALOETOUCH_PRESS_MIN_TIME = 600;
  * Distanza minima per bindare l'evento swipe[Direction]
  * @type {Number}
  */
-var ALOETOUCH_MIN_SWIPE_DISTANCE = exports.ALOETOUCH_MIN_SWIPE_DISTANCE = 20;
+var ALOETOUCH_MIN_SWIPE_DISTANCE = exports.ALOETOUCH_MIN_SWIPE_DISTANCE = 60;
 
 /**
  * Distanza tra due Tap per bindare l'evento Double Tap
@@ -318,6 +318,16 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
+ * Settaggi di default
+ * @type Object
+ */
+var DEFAULT_SETTINGS = {
+    strict: false,
+    onlyX: false,
+    onlyY: false
+};
+
+/**
  * Assegna gli eventi touch ad un elemento
  *
  * GLi eventi disponibili sono:
@@ -326,31 +336,33 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * Touch doppio
  *     pan2, pinch, rotate
  */
+
 var AloeTouchObject = function () {
 
     /**
      * Binda gli eventi all'elemento
      * @param {DomElement} element
      * @param {Object} events Oggetto che contiene le funzioni es. { tap: ..., swipeLeft: ..., rotate: ... }
-     * @param {Boolean} strict Aggiunge le coordinate del tuoch solo se il target è uguale all'elemento bindato
+     * @param {Object<Boolean>} strict
      */
-    function AloeTouchObject(id, element, events, strict) {
+    function AloeTouchObject(id, element, events, settings) {
         _classCallCheck(this, AloeTouchObject);
 
         this.id = id;
         this.el = typeof element === 'string' ? document.querySelector(element) : element;
-        this.strict = !!strict;
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, settings);
+
         this.locked = true;
 
-        this.Dispatcher = new _Dispatcher2.default(id, this.el, events);
+        this.public = this.getPublicMethods();
+
+        this.Dispatcher = new _Dispatcher2.default(id, this.el, events, this.public);
 
         this.start = this.start.bind(this);
         this.move = this.move.bind(this);
         this.finish = this.finish.bind(this);
 
         this.unlock();
-
-        this.public = this.getPublicMethods();
     }
 
     /**
@@ -361,7 +373,7 @@ var AloeTouchObject = function () {
     _createClass(AloeTouchObject, [{
         key: 'start',
         value: function start(event) {
-            !this.locked && this.Dispatcher.start(event, (0, _Utils.getTouches)(event, this.el, this.strict));
+            !this.locked && this.Dispatcher.start(event, (0, _Utils.getTouches)(event, this.el, this.settings.strict));
         }
 
         /**
@@ -371,7 +383,7 @@ var AloeTouchObject = function () {
     }, {
         key: 'move',
         value: function move(event) {
-            if (!this.locked && this.Dispatcher.isStarted() && this.Dispatcher.end(event, (0, _Utils.getTouches)(event, this.el, this.strict)) && this.isPermissible(event)) {
+            if (!this.locked && this.Dispatcher.isStarted() && this.Dispatcher.end(event, (0, _Utils.getTouches)(event, this.el, this.settings.strict)) && this.isPermissible(event)) {
                 event.preventDefault();
                 event.stopPropagation();
 
@@ -390,9 +402,10 @@ var AloeTouchObject = function () {
         key: 'isPermissible',
         value: function isPermissible(event) {
             var time = Date.now() - this.Dispatcher.started.time;
-            var _isHorizontal = (0, _Utils.isHorizontal)(this.Dispatcher.started, this.Dispatcher.ended); // Se lo scrolling è orizzontale implica che l'utente non sta scorrendo
-            // verticalmente la pagina, quindi è possibile bloccare lo scrolling
-            return event.cancelable && (_isHorizontal || time > _constants.ALOETOUCH_MIN_TIME);
+            var _isHorizontal = (0, _Utils.isHorizontal)(this.Dispatcher.started, this.Dispatcher.ended);
+            var _isVertical = (0, _Utils.isVertical)(this.Dispatcher.started, this.Dispatcher.ended);
+
+            return event.cancelable && (!this.settings.onlyX && !this.settings.onlyY && time > _constants.ALOETOUCH_MIN_TIME || _isHorizontal || this.settings.onlyX && _isHorizontal || this.settings.onlyY && _isVertical);
         }
 
         /**
@@ -425,9 +438,9 @@ var AloeTouchObject = function () {
         key: 'lock',
         value: function lock() {
             if (!this.locked) {
-                this.off('touchstart', this.start);
+                this.off('touchstart', this.start, true);
                 this.off('touchmove', this.move);
-                this.off('touchend touchcancel', this.finish);
+                this.off('touchend touchcancel', this.finish, true);
                 this.locked = true;
             }
         }
@@ -440,9 +453,9 @@ var AloeTouchObject = function () {
         key: 'unlock',
         value: function unlock() {
             if (this.locked) {
-                this.on('touchstart', this.start);
+                this.on('touchstart', this.start, true);
                 this.on('touchmove', this.move);
-                this.on('touchend touchcancel', this.finish);
+                this.on('touchend touchcancel', this.finish, true);
                 this.locked = false;
             }
         }
@@ -453,11 +466,11 @@ var AloeTouchObject = function () {
 
     }, {
         key: 'on',
-        value: function on(events, handler) {
+        value: function on(events, handler, passive) {
             var _this = this;
 
             events.split(' ').forEach(function (e) {
-                return _this.el.addEventListener(e, handler, true);
+                return _this.el.addEventListener(e, handler, passive ? { passive: true } : true);
             });
         }
 
@@ -507,13 +520,13 @@ var AloeTouchObject = function () {
                     ato.Dispatcher.Emitter.State.remove(name);
                 },
                 lock: function lock() {
-                    ato.lock;
+                    ato.lock();
                 },
                 unlock: function unlock() {
-                    ato.unlock;
+                    ato.unlock();
                 },
                 isLock: function isLock() {
-                    ato.isLock();
+                    return ato.isLock();
                 },
 
 
@@ -560,10 +573,10 @@ var Dispatcher = function () {
     /**
      * Binda l'Emtitter che chiamerà gli eventi
      */
-    function Dispatcher(id, element, events) {
+    function Dispatcher(id, element, events, ato) {
         _classCallCheck(this, Dispatcher);
 
-        this.Emitter = new _Emitter2.default(id, element, events || {});
+        this.Emitter = new _Emitter2.default(id, element, events || {}, ato);
         this.started = null;
         this.ended = null;
         this.lastTap = null;
@@ -639,7 +652,7 @@ var Dispatcher = function () {
         key: 'dispatchFinalEvents',
         value: function dispatchFinalEvents(move) {
             move ? this.dispatchSwipe() : this.dispatchTap();
-
+            this.Emitter.emit('end');
             this.clear();
         }
 
@@ -753,13 +766,14 @@ var Emitter = function () {
     /**
      * Gestore degli eventi e relativi argomenti
      */
-    function Emitter(id, el, events) {
+    function Emitter(id, el, events, ato) {
         _classCallCheck(this, Emitter);
 
+        this.ato = ato;
         this.events = events;
         this.State = new _State2.default(events.state || {});
 
-        this.initialData = { id: id, el: el };
+        this.initialData = { id: id, el: el, ato: ato };
         this.before = {};
 
         this.detach('state');
@@ -775,7 +789,7 @@ var Emitter = function () {
     _createClass(Emitter, [{
         key: 'emit',
         value: function emit(event) {
-            if (_Events2.default.emit(event, this.data, this.events[event], this.data.started.time) === false) this.detach(event);
+            if (_Events2.default.emit(event, this.data, this.events[event]) === false) this.detach(event);
         }
 
         /**
@@ -826,10 +840,7 @@ var Emitter = function () {
     }, {
         key: 'prepare',
         value: function prepare(started, ended, fingers, final) {
-            this.data = { started: started, ended: ended, fingers: fingers, final: final };
-
-            this.data.id = this.initialData.id;
-            this.data.el = this.initialData.el;
+            this.data = Object.assign({}, this.initialData, { started: started, ended: ended, fingers: fingers, final: final });
 
             this.setStateData(started, ended, fingers, final); // Setta lo state se si sta 'preparando' un evento non finale
 
@@ -848,7 +859,6 @@ var Emitter = function () {
                 this.data.pinch = (0, _Utils.distanceBetween)(started, ended);
                 this.data.rotate = (0, _Utils.rotation)(started, ended);
             }
-
             !final && this.State.set(this.data);
         }
 
@@ -1017,6 +1027,7 @@ var State = function () {
             Object.keys(state).forEach(function (s) {
                 return _this3.customState[s] = state[s];
             });
+            this.set({});
         }
 
         /**
@@ -1097,7 +1108,7 @@ exports.default = {
    * Special Event
    */
   start: function start(values, callback) {
-    return callback();
+    return callback(values);
   },
 
 
@@ -1113,6 +1124,23 @@ exports.default = {
    * Special Event
    */
   end: function end(values, callback) {
+    var coords = values.pan;
+
+    if (coords) {
+      values.isSwipe = false;
+      var directions = (0, _Utils.stringDirection)(coords);
+
+      if (Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) {
+        values.isSwipe = true;
+        values.directions ? values.directions.x = directions.x : values.directions = { x: directions.x };
+      }
+
+      if (Math.abs(coords.y) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) {
+        values.isSwipe = true;
+        values.directions ? values.directions.y = directions.y : values.directions = { y: directions.y };
+      }
+    }
+
     return callback(values);
   },
 
@@ -1255,7 +1283,7 @@ var AloeTouch = {
    *
    * @type {Number}
    */
-  length: 0,
+  increment: 0,
 
   /**
    * Lista degli AloeTouchObject
@@ -1272,11 +1300,12 @@ var AloeTouch = {
    * @param {Boolean}    strict  Se settata, valida l'evento solo se il target del touch è l'elemento bindato
    */
   bind: function bind(element, events, strict) {
-    var id = ++AloeTouch.length;
+    var id = ++AloeTouch.increment;
 
-    AloeTouch.list[id] = new _AloeTouchObject2.default(id, element, events, strict).public;
+    var ato = new _AloeTouchObject2.default(id, element, events, strict).public;
+    ato.el.setAttribute('aloetouch-data-id', id);
 
-    return AloeTouch.list[id];
+    return AloeTouch.list[id] = ato;
   },
 
 
@@ -1287,7 +1316,7 @@ var AloeTouch = {
    * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
    */
   unbind: function unbind(aloetouchobject) {
-    var id = this.getIds(aloetouchobject, true);
+    var id = aloetouchobject.nodeType ? aloetouchobject.getAttribute('aloetouch-data-id') : this.getIds(aloetouchobject, true);
 
     if (id) {
       AloeTouch.list[id].lock();
@@ -1326,7 +1355,7 @@ var AloeTouch = {
       return !!id;
     });
 
-    return flag ? aloetouchobjects.length == 1 ? aloetouchobjects[0] : aloetouchobjects : aloetouchobjects;
+    return flag ? aloetouchobjects.increment == 1 ? aloetouchobjects[0] : aloetouchobjects : aloetouchobjects;
   },
 
 

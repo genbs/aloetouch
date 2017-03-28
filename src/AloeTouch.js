@@ -10,7 +10,7 @@ let AloeTouch = {
      *
      * @type {Number}
      */
-    length: 0,
+    increment: 0,
 
     /**
      * Lista degli AloeTouchObject
@@ -28,11 +28,12 @@ let AloeTouch = {
      */
     bind(element, events, strict)
     {
-        let id = ++AloeTouch.length
+        let id = ++AloeTouch.increment
 
-        AloeTouch.list[id] = new AloeTouchObject( id, element, events, strict ).public
+        let ato = new AloeTouchObject( id, element, events, strict ).public
+        ato.el.setAttribute('aloetouch-data-id', id)
 
-        return AloeTouch.list[id]
+        return ( AloeTouch.list[id] = ato )
     },
 
 
@@ -44,7 +45,7 @@ let AloeTouch = {
      */
     unbind(aloetouchobject)
     {
-        let id = this.getIds(aloetouchobject, true)
+        let id = aloetouchobject.nodeType ? aloetouchobject.getAttribute('aloetouch-data-id') : this.getIds(aloetouchobject, true)
 
         if(id) {
             AloeTouch.list[id].lock()
@@ -79,7 +80,7 @@ let AloeTouch = {
         aloetouchobjects = aloetouchobjects.map( ato => typeof ato === 'number' ? ( AloeTouch.get(ato) ? ato : null ) : ( ato.$ref ? ato.$id : null ) )
         aloetouchobjects = aloetouchobjects.filter(id => !!id)
 
-        return flag ? ( aloetouchobjects.length == 1 ? aloetouchobjects[0] : aloetouchobjects ) : aloetouchobjects
+        return flag ? ( aloetouchobjects.increment == 1 ? aloetouchobjects[0] : aloetouchobjects ) : aloetouchobjects
     },
 
     /**
