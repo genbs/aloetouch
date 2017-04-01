@@ -363,6 +363,8 @@ var AloeTouchObject = function () {
         this.finish = this.finish.bind(this);
 
         this.unlock();
+
+        this.el.style.willChange = 'transform';
     }
 
     /**
@@ -414,7 +416,7 @@ var AloeTouchObject = function () {
 
     }, {
         key: 'finish',
-        value: function finish(event) {
+        value: function finish() {
             !this.locked && this.Dispatcher.isStarted() && this.Dispatcher.dispatch(true);
         }
 
@@ -1343,10 +1345,10 @@ var AloeTouch = {
    * Ritorna un' array di id
    *
    * @param {Array<AloeTouchObject or Number>} aloetouchobjects
-   * @param {Boolean} flag Ritorna un id se l'array ha lunghezza pari a uno
+   * @param {Boolean} first Ritorna un id se l'array ha lunghezza pari a uno
    * @return {Array<Number> or Number}
    */
-  getIds: function getIds(aloetouchobjects, flag) {
+  getIds: function getIds(aloetouchobjects, first) {
     aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects];
     aloetouchobjects = aloetouchobjects.map(function (ato) {
       return typeof ato === 'number' ? AloeTouch.get(ato) ? ato : null : ato.$ref ? ato.$id : null;
@@ -1355,7 +1357,7 @@ var AloeTouch = {
       return !!id;
     });
 
-    return flag ? aloetouchobjects.increment == 1 ? aloetouchobjects[0] : aloetouchobjects : aloetouchobjects;
+    return first ? aloetouchobjects[0] : aloetouchobjects;
   },
 
 
@@ -1372,11 +1374,11 @@ var AloeTouch = {
 
 
   /**
-   *  Blocca tutti gli oggetti tranne quelli presenti nell'array aloetouchobjects
+   *  Blocca tutti gli oggetti tranne quelli presenti nell'array ids
    *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   * @param {Array<AloeTouchObject or Number>} ids
    */
-  lockExcept: function lockExcept(aloetouchobjects) {
+  lockExcept: function lockExcept(ids) {
     ids = this.getIds(ids) || [];
 
     AloeTouch.map(function (ato, id) {
@@ -1386,11 +1388,11 @@ var AloeTouch = {
 
 
   /**
-   * Blocca solo gli oggetti presenti in aloetouchobjects
+   * Blocca solo gli oggetti presenti in ids
    *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   * @param {Array<AloeTouchObject or Number>} ids
    */
-  lockOnly: function lockOnly(aloetouchobjects) {
+  lockOnly: function lockOnly(ids) {
     ids = this.getIds(ids) || [];
 
     AloeTouch.map(function (ato, id) {
@@ -1422,12 +1424,12 @@ var AloeTouch = {
 
 
   /**
-   * Abilita gli eventi solo agli elementi presenti nell'array aloetouchobjects
+   * Abilita gli eventi solo agli elementi presenti nell'array ids
    *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   * @param {Array<AloeTouchObject or Number>} ids
    */
-  unlockOnly: function unlockOnly(aloetouchobjects) {
-    AloeTouch.lockExcept(aloetouchobjects);
+  unlockOnly: function unlockOnly(ids) {
+    AloeTouch.lockExcept(ids);
   },
 
 

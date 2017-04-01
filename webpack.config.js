@@ -1,5 +1,3 @@
-const webpack = require('webpack');
-
 const min = process.argv.indexOf('-p') >= 0;
 
 let config = {
