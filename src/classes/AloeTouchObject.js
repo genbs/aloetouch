@@ -1,5 +1,5 @@
 import { ALOETOUCH_MIN_TIME } from '../services/constants'
-import { getTouches, isHorizontal, isVertical, velocity } from '../services/Utils'
+import { getTouches, isHorizontal, isVertical } from '../services/Utils'
 
 import Dispatcher from './Dispatcher'
 
@@ -99,7 +99,7 @@ export default class AloeTouchObject {
     /**
      * Termino l'evento
      */
-    finish(event)
+    finish()
     {
         !this.locked && this.Dispatcher.isStarted() && this.Dispatcher.dispatch(true)
     }

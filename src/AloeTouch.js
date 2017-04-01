@@ -71,16 +71,16 @@ let AloeTouch = {
      * Ritorna un' array di id
      *
      * @param {Array<AloeTouchObject or Number>} aloetouchobjects
-     * @param {Boolean} flag Ritorna un id se l'array ha lunghezza pari a uno
+     * @param {Boolean} first Ritorna un id se l'array ha lunghezza pari a uno
      * @return {Array<Number> or Number}
      */
-    getIds(aloetouchobjects, flag)
+    getIds(aloetouchobjects, first)
     {
         aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects]
         aloetouchobjects = aloetouchobjects.map( ato => typeof ato === 'number' ? ( AloeTouch.get(ato) ? ato : null ) : ( ato.$ref ? ato.$id : null ) )
         aloetouchobjects = aloetouchobjects.filter(id => !!id)
 
-        return flag ? ( aloetouchobjects.increment == 1 ? aloetouchobjects[0] : aloetouchobjects ) : aloetouchobjects
+        return first ? aloetouchobjects[0] : aloetouchobjects
     },
 
     /**
@@ -94,11 +94,11 @@ let AloeTouch = {
     },
 
     /**
-     *  Blocca tutti gli oggetti tranne quelli presenti nell'array aloetouchobjects
+     *  Blocca tutti gli oggetti tranne quelli presenti nell'array ids
      *
-     * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+     * @param {Array<AloeTouchObject or Number>} ids
      */
-    lockExcept(aloetouchobjects)
+    lockExcept(ids)
     {
         ids = this.getIds(ids) || []
 
@@ -106,11 +106,11 @@ let AloeTouch = {
     },
 
     /**
-     * Blocca solo gli oggetti presenti in aloetouchobjects
+     * Blocca solo gli oggetti presenti in ids
      *
-     * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+     * @param {Array<AloeTouchObject or Number>} ids
      */
-    lockOnly(aloetouchobjects)
+    lockOnly(ids)
     {
         ids = this.getIds(ids) || []
 
@@ -138,13 +138,13 @@ let AloeTouch = {
     },
 
     /**
-     * Abilita gli eventi solo agli elementi presenti nell'array aloetouchobjects
+     * Abilita gli eventi solo agli elementi presenti nell'array ids
      *
-     * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+     * @param {Array<AloeTouchObject or Number>} ids
      */
-    unlockOnly(aloetouchobjects)
+    unlockOnly(ids)
     {
-        AloeTouch.lockExcept(aloetouchobjects)
+        AloeTouch.lockExcept(ids)
     },
 
     /**
