@@ -1,3 +1,4 @@
 /node_modules/
 /remember/**/*
 npm-debug.log
+.vscode
