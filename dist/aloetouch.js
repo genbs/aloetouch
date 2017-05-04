@@ -1189,8 +1189,7 @@ exports.default = {
   */
   swipeLeft: function swipeLeft(values, callback) {
     var coords = values.pan;
-    console.log('swipeLeft', coords);
-    if (Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+    if (coords.x < 0 && Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
   },
 
 
@@ -1198,9 +1197,8 @@ exports.default = {
    * Valido l'evento swipeRight
    */
   swipeRight: function swipeRight(values, callback) {
-    console.log('swipeRIght', coords);
     var coords = values.pan;
-    if (Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
+    if (coords.x > 0 && Math.abs(coords.x) > _constants.ALOETOUCH_MIN_SWIPE_DISTANCE) return callback({ coords: coords }, values);
   },
 
 

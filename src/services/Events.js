@@ -101,8 +101,7 @@ export default  {
     swipeLeft(values, callback)
     {
         let coords = values.pan
-        console.log('swipeLeft', coords);
-        if( Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
+        if(coords.x < 0 && Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
             return callback({ coords }, values)
     },
 
@@ -112,8 +111,7 @@ export default  {
     swipeRight(values, callback)
     {
         let coords = values.pan
-        console.log('swipeRIght', coords);
-        if( Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
+        if( coords.x > 0 && Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
             return callback({ coords }, values)
     },
 
