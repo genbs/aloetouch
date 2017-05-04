@@ -111,8 +111,8 @@ export default  {
      */
     swipeRight(values, callback)
     {
-        console.log('swipeRIght', coords);
         let coords = values.pan
+        console.log('swipeRIght', coords);
         if( Math.abs(coords.x) > ALOETOUCH_MIN_SWIPE_DISTANCE )
             return callback({ coords }, values)
     },
