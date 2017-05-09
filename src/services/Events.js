@@ -137,7 +137,7 @@ export default  {
 
     /**
      * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-
+     *
      * @param {Object} coords
      */
     pan(values, callback)
@@ -147,7 +147,7 @@ export default  {
 
     /**
      * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-
+     *
      * @param {Object} coords
      */
     pan2(values, callback)
