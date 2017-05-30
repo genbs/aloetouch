@@ -9,6 +9,7 @@ import Dispatcher from './Dispatcher'
  */
 const DEFAULT_SETTINGS = {
     strict: false,
+    stopPropagation: false,
     onlyX: false,
     onlyY: false
 }
@@ -71,7 +72,7 @@ export default class AloeTouchObject {
             this.isPermissible(event)
         ) {
             event.preventDefault()
-            //event.stopPropagation()
+            this.settings.stopPropagation && event.stopPropagation()
 
             this.Dispatcher.dispatch()
         } else {

@@ -323,6 +323,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  */
 var DEFAULT_SETTINGS = {
     strict: false,
+    stopPropagation: false,
     onlyX: false,
     onlyY: false
 };
@@ -387,7 +388,7 @@ var AloeTouchObject = function () {
         value: function move(event) {
             if (!this.locked && this.Dispatcher.isStarted() && this.Dispatcher.end(event, (0, _Utils.getTouches)(event, this.el, this.settings.strict)) && this.isPermissible(event)) {
                 event.preventDefault();
-                //event.stopPropagation()
+                this.settings.stopPropagation && event.stopPropagation();
 
                 this.Dispatcher.dispatch();
             } else {
