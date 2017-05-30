@@ -387,7 +387,7 @@ var AloeTouchObject = function () {
         value: function move(event) {
             if (!this.locked && this.Dispatcher.isStarted() && this.Dispatcher.end(event, (0, _Utils.getTouches)(event, this.el, this.settings.strict)) && this.isPermissible(event)) {
                 event.preventDefault();
-                event.stopPropagation();
+                //event.stopPropagation()
 
                 this.Dispatcher.dispatch();
             } else {
@@ -1222,7 +1222,8 @@ exports.default = {
 
   /**
    * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-    * @param {Object} coords
+   *
+   * @param {Object} coords
    */
   pan: function pan(values, callback) {
     return callback(values.pan, values);
@@ -1231,7 +1232,8 @@ exports.default = {
 
   /**
    * L'evento pan non ha bisogno di validazioni, siccome sono state fatte nel metodo move
-    * @param {Object} coords
+   *
+   * @param {Object} coords
    */
   pan2: function pan2(values, callback) {
     return callback(values.pan, values);

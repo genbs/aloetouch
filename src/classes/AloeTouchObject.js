@@ -71,7 +71,7 @@ export default class AloeTouchObject {
             this.isPermissible(event)
         ) {
             event.preventDefault()
-            event.stopPropagation()
+            //event.stopPropagation()
 
             this.Dispatcher.dispatch()
         } else {
