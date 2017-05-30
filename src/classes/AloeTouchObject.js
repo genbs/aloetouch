@@ -57,7 +57,7 @@ export default class AloeTouchObject {
      */
     start(event)
     {
-        !this.locked && this.Dispatcher.start( event, getTouches(event, this.el, this.settings.strict) )
+        !this.locked && this.Dispatcher.start( event, getTouches(event, this.el, this.settings.strict), this.settings.stopPropagation )
     }
 
     /**
@@ -105,7 +105,14 @@ export default class AloeTouchObject {
      */
     finish(event)
     {
-        !this.locked && this.Dispatcher.isStarted() && this.Dispatcher.dispatch(true, event)
+        if (!this.locked && this.Dispatcher.isStarted()) {
+            this.Dispatcher.dispatch(true, event)
+            
+            if (this.settings.stopPropagation) {    
+                event.stopPropagation()
+                event.stopImmediatePropagation()
+            }
+        }
     }
 
     /**

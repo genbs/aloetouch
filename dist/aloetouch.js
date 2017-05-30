@@ -376,7 +376,7 @@ var AloeTouchObject = function () {
     _createClass(AloeTouchObject, [{
         key: 'start',
         value: function start(event) {
-            !this.locked && this.Dispatcher.start(event, (0, _Utils.getTouches)(event, this.el, this.settings.strict));
+            !this.locked && this.Dispatcher.start(event, (0, _Utils.getTouches)(event, this.el, this.settings.strict), this.settings.stopPropagation);
         }
 
         /**
@@ -421,7 +421,14 @@ var AloeTouchObject = function () {
     }, {
         key: 'finish',
         value: function finish(event) {
-            !this.locked && this.Dispatcher.isStarted() && this.Dispatcher.dispatch(true, event);
+            if (!this.locked && this.Dispatcher.isStarted()) {
+                this.Dispatcher.dispatch(true, event);
+
+                if (this.settings.stopPropagation) {
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                }
+            }
         }
 
         /**
@@ -596,7 +603,7 @@ var Dispatcher = function () {
 
     _createClass(Dispatcher, [{
         key: 'start',
-        value: function start(event, touches) {
+        value: function start(event, touches, stopPropagation) {
             if (!event.cancelable) return this.clear();
 
             !this.started ? this.started = { time: Date.now(), touches: touches } : this.started.touches = touches;
@@ -609,6 +616,11 @@ var Dispatcher = function () {
                 this.Emitter.emit('start', event);
 
                 _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
+
+                if (stopPropagation) {
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                }
             }
         }
 

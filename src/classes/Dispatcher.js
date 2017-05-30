@@ -23,7 +23,7 @@ export default class Dispatcher {
      * Setta l'evento iniziale
      * Binderà l'evento press nel caso in cui l'utente non rilascerà o muoverà l'elemento
      */
-    start(event, touches)
+    start(event, touches, stopPropagation)
     {
         if (!event.cancelable)
             return this.clear()
@@ -38,6 +38,11 @@ export default class Dispatcher {
             this.Emitter.emit('start', event)
 
             _fingers > 1 && event.preventDefault() // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
+            
+            if (stopPropagation) {
+                event.stopPropagation()
+                event.stopImmediatePropagation()
+            }
         }
     }
 
