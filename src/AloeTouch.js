@@ -24,13 +24,13 @@ let AloeTouch = {
      *
      * @param {DOMElement} element Elemento da bindare
      * @param {Object}     events  Eventi da assegnare all'elemento
-     * @param {Boolean}    strict  Se settata, valida l'evento solo se il target del touch è l'elemento bindato
+     * @param {Object}    settings Impostazioni per l'ATO
      */
-    bind(element, events, strict)
+    bind(element, events, settings)
     {
         let id = ++AloeTouch.increment
 
-        let ato = new AloeTouchObject( id, element, events, strict ).public
+        let ato = new AloeTouchObject( id, element, events, settings ).public
         ato.el.setAttribute('aloetouch-data-id', id)
 
         return ( AloeTouch.list[id] = ato )
