@@ -393,7 +393,7 @@ var AloeTouchObject = function () {
                     event.stopImmediatePropagation();
                 }
 
-                this.Dispatcher.dispatch();
+                this.Dispatcher.dispatch(null, event);
             } else {
                 this.Dispatcher.clear();
             }
@@ -420,8 +420,8 @@ var AloeTouchObject = function () {
 
     }, {
         key: 'finish',
-        value: function finish() {
-            !this.locked && this.Dispatcher.isStarted() && this.Dispatcher.dispatch(true);
+        value: function finish(event) {
+            !this.locked && this.Dispatcher.isStarted() && this.Dispatcher.dispatch(true, event);
         }
 
         /**
@@ -605,8 +605,8 @@ var Dispatcher = function () {
 
             if (_fingers) {
                 this.Emitter.prepare(this.started);
-                this.Emitter.emitBefore('press', _constants.ALOETOUCH_PRESS_MIN_TIME);
-                this.Emitter.emit('start');
+                this.Emitter.emitAfter('press', _constants.ALOETOUCH_PRESS_MIN_TIME);
+                this.Emitter.emit('start', event);
 
                 _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
             }
@@ -638,16 +638,17 @@ var Dispatcher = function () {
          * Smisto gli eventi in 'touchmove' in base al numero di tocchi in base alla tipologia dell'evento
          *
          * @param {Boolean} final Questo valore è settato a true se questa funzione è chiamanta dall'evento touchend o touchcancel
+         * @param {Event} 
          */
 
     }, {
         key: 'dispatch',
-        value: function dispatch(final) {
+        value: function dispatch(final, event) {
             var _fingers = (0, _Utils.fingers)(this.ended);
 
             this.Emitter.prepare(this.started, this.ended, _fingers, !!final);
 
-            final ? this.dispatchFinalEvents(!!this.ended) : this.dispatchMovedEvents(_fingers); // Smisto al tipo di eventi
+            final ? this.dispatchFinalEvents(!!this.ended, event) : this.dispatchMovedEvents(_fingers, event); // Smisto al tipo di eventi
         }
 
         /**
@@ -656,9 +657,9 @@ var Dispatcher = function () {
 
     }, {
         key: 'dispatchFinalEvents',
-        value: function dispatchFinalEvents(move) {
-            move ? this.dispatchSwipe() : this.dispatchTap();
-            this.Emitter.emit('end');
+        value: function dispatchFinalEvents(move, event) {
+            move ? this.dispatchSwipe(event) : this.dispatchTap(event);
+            this.Emitter.emit('end', event);
             this.clear();
         }
 
@@ -668,17 +669,17 @@ var Dispatcher = function () {
 
     }, {
         key: 'dispatchMovedEvents',
-        value: function dispatchMovedEvents(_fingers) {
-            this.Emitter.clearBefore('press'); // l'evento press non è più valido se l'utente si muove sull'elemento
+        value: function dispatchMovedEvents(_fingers, event) {
+            this.Emitter.clearAfter('press'); // l'evento press non è più valido se l'utente si muove sull'elemento
 
             // Smisto gli eventi in base al numero dei tocchi
-            if (_fingers == 1) this.Emitter.emit('pan');else if (_fingers == 2) {
-                this.Emitter.emit('pan2');
-                this.Emitter.emit('pinch');
-                this.Emitter.emit('rotate');
+            if (_fingers == 1) this.Emitter.emit('pan', event);else if (_fingers == 2) {
+                this.Emitter.emit('pan2', event);
+                this.Emitter.emit('pinch', event);
+                this.Emitter.emit('rotate', event);
             }
 
-            this.Emitter.emit('move'); // Chiamo l'evento speciale 'move' in ogni caso
+            this.Emitter.emit('move', event); // Chiamo l'evento speciale 'move' in ogni caso
         }
 
         /**
@@ -687,17 +688,17 @@ var Dispatcher = function () {
 
     }, {
         key: 'dispatchTap',
-        value: function dispatchTap() {
+        value: function dispatchTap(event) {
             var _this = this;
 
             if (!this.lastTap) {
                 this.lastTap = this.started.time;
-                this.Emitter.emitBefore('tap', _constants.ALOETOUCH_DBL_TAP_TIME, function () {
+                this.Emitter.emitAfter('tap', _constants.ALOETOUCH_DBL_TAP_TIME, function () {
                     return _this.lastTap = null;
                 });
             } else if (this.started.time - this.lastTap < _constants.ALOETOUCH_DBL_TAP_TIME) {
-                this.Emitter.clearBefore('tap');
-                this.Emitter.emit('dbltap');
+                this.Emitter.clearAfter('tap');
+                this.Emitter.emit('dbltap', event);
                 this.lastTap = null;
             }
         }
@@ -708,12 +709,12 @@ var Dispatcher = function () {
 
     }, {
         key: 'dispatchSwipe',
-        value: function dispatchSwipe() {
-            this.Emitter.emit('swipe');
-            this.Emitter.emit('swipeLeft');
-            this.Emitter.emit('swipeRight');
-            this.Emitter.emit('swipeTop');
-            this.Emitter.emit('swipeBottom');
+        value: function dispatchSwipe(event) {
+            this.Emitter.emit('swipe', event);
+            this.Emitter.emit('swipeLeft', event);
+            this.Emitter.emit('swipeRight', event);
+            this.Emitter.emit('swipeTop', event);
+            this.Emitter.emit('swipeBottom', event);
         }
 
         /**
@@ -726,7 +727,7 @@ var Dispatcher = function () {
             this.started = null;
             this.ended = null;
 
-            this.Emitter.clearBefore('press');
+            this.Emitter.clearAfter('press');
             this.Emitter.State.refresh();
         }
     }]);
@@ -780,7 +781,7 @@ var Emitter = function () {
         this.State = new _State2.default(events.state || {});
 
         this.initialData = { id: id, el: el, ato: ato };
-        this.before = {};
+        this.after = {};
 
         this.detach('state');
     }
@@ -788,14 +789,15 @@ var Emitter = function () {
     /**
      * Emette un evento se settato
      *
-     * @param {String} event Nome dell'evento da emettere
+     * @param {String} eventName Nome dell'evento da emettere
+     * @param {Event} event
      */
 
 
     _createClass(Emitter, [{
         key: 'emit',
-        value: function emit(event) {
-            if (_Events2.default.emit(event, this.data, this.events[event]) === false) this.detach(event);
+        value: function emit(eventName, event) {
+            if (_Events2.default.emit(eventName, this.data, this.events[eventName], event) === false) this.detach(eventName);
         }
 
         /**
@@ -807,13 +809,13 @@ var Emitter = function () {
          */
 
     }, {
-        key: 'emitBefore',
-        value: function emitBefore(event, delay, callback) {
+        key: 'emitAfter',
+        value: function emitAfter(event, delay, callback) {
             var _this = this;
 
-            this.clearBefore(event);
+            this.clearAfter(event);
 
-            this.before[event] = window.setTimeout(function () {
+            this.after[event] = window.setTimeout(function () {
                 _this.emit(event);
                 callback && callback();
             }, delay);
@@ -826,16 +828,16 @@ var Emitter = function () {
          */
 
     }, {
-        key: 'clearBefore',
-        value: function clearBefore(event) {
+        key: 'clearAfter',
+        value: function clearAfter(event) {
             var _this2 = this;
 
-            if (typeof event === 'undefined') Object.keys(this.before).forEach(function (e) {
-                return _this2.clearBefore(e);
+            if (typeof event === 'undefined') Object.keys(this.after).forEach(function (e) {
+                return _this2.clearAfter(e);
             });else {
-                this.before[event] && window.clearTimeout(this.before[event]);
-                this.before[event] = null;
-                delete this.before[event];
+                this.after[event] && window.clearTimeout(this.after[event]);
+                this.after[event] = null;
+                delete this.after[event];
             }
         }
 
@@ -1102,8 +1104,9 @@ exports.default = {
   /**
    * Richiama gli altri eventi
    */
-  emit: function emit(event, values, callback) {
+  emit: function emit(event, values, callback, nativeEvent) {
     if (events.indexOf(event) >= 0 && this[event] && callback) {
+      values.$event = nativeEvent;
       var result = this[event](values, callback);
       return result === false ? false : true;
     }

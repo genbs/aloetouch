@@ -34,8 +34,8 @@ export default class Dispatcher {
 
         if( _fingers ) {
             this.Emitter.prepare(this.started)
-            this.Emitter.emitBefore('press', ALOETOUCH_PRESS_MIN_TIME)
-            this.Emitter.emit('start')
+            this.Emitter.emitAfter('press', ALOETOUCH_PRESS_MIN_TIME)
+            this.Emitter.emit('start', event)
 
             _fingers > 1 && event.preventDefault() // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
         }
@@ -63,56 +63,57 @@ export default class Dispatcher {
      * Smisto gli eventi in 'touchmove' in base al numero di tocchi in base alla tipologia dell'evento
      *
      * @param {Boolean} final Questo valore è settato a true se questa funzione è chiamanta dall'evento touchend o touchcancel
+     * @param {Event} 
      */
-    dispatch(final)
+    dispatch(final, event)
     {
         let _fingers = fingers(this.ended)
 
         this.Emitter.prepare(this.started, this.ended, _fingers, !!final)
 
-        final ? this.dispatchFinalEvents(!!this.ended) : this.dispatchMovedEvents(_fingers) // Smisto al tipo di eventi
+        final ? this.dispatchFinalEvents(!!this.ended, event) : this.dispatchMovedEvents(_fingers, event) // Smisto al tipo di eventi
     }
 
     /**
      * Gestione degli eventi che non richiedono movimento
      */
-    dispatchFinalEvents(move)
+    dispatchFinalEvents(move, event)
     {
-        move ? this.dispatchSwipe() : this.dispatchTap()
-        this.Emitter.emit('end')
+        move ? this.dispatchSwipe(event) : this.dispatchTap(event)
+        this.Emitter.emit('end', event)
         this.clear()
     }
 
     /**
      * Gestione degli eventi con movimento
      */
-    dispatchMovedEvents(_fingers)
+    dispatchMovedEvents(_fingers, event)
     {
-        this.Emitter.clearBefore('press') // l'evento press non è più valido se l'utente si muove sull'elemento
+        this.Emitter.clearAfter('press') // l'evento press non è più valido se l'utente si muove sull'elemento
 
         // Smisto gli eventi in base al numero dei tocchi
         if( _fingers == 1)
-           this.Emitter.emit('pan')
+           this.Emitter.emit('pan', event)
         else if( _fingers == 2 ) {
-            this.Emitter.emit('pan2')
-            this.Emitter.emit('pinch')
-            this.Emitter.emit('rotate')
+            this.Emitter.emit('pan2', event)
+            this.Emitter.emit('pinch', event)
+            this.Emitter.emit('rotate', event)
         }
 
-        this.Emitter.emit('move') // Chiamo l'evento speciale 'move' in ogni caso
+        this.Emitter.emit('move', event) // Chiamo l'evento speciale 'move' in ogni caso
     }
 
     /**
      * Gestione dell'evento particolare 'tap' e 'dbltap'
      */
-    dispatchTap()
+    dispatchTap(event)
     {
         if(!this.lastTap) {
             this.lastTap = this.started.time
-            this.Emitter.emitBefore('tap', ALOETOUCH_DBL_TAP_TIME, () => this.lastTap = null)
+            this.Emitter.emitAfter('tap', ALOETOUCH_DBL_TAP_TIME, () => this.lastTap = null)
         } else if( this.started.time - this.lastTap < ALOETOUCH_DBL_TAP_TIME ) {
-            this.Emitter.clearBefore('tap') 
-            this.Emitter.emit('dbltap') 
+            this.Emitter.clearAfter('tap') 
+            this.Emitter.emit('dbltap', event) 
             this.lastTap = null
         }
     }
@@ -120,13 +121,13 @@ export default class Dispatcher {
     /**
      * Gestione dell'evento 'swipe'
      */
-    dispatchSwipe()
+    dispatchSwipe(event)
     {
-        this.Emitter.emit('swipe')
-        this.Emitter.emit('swipeLeft')
-        this.Emitter.emit('swipeRight')
-        this.Emitter.emit('swipeTop')
-        this.Emitter.emit('swipeBottom')
+        this.Emitter.emit('swipe', event)
+        this.Emitter.emit('swipeLeft', event)
+        this.Emitter.emit('swipeRight', event)
+        this.Emitter.emit('swipeTop', event)
+        this.Emitter.emit('swipeBottom', event)
     }
 
     /**
@@ -137,7 +138,7 @@ export default class Dispatcher {
         this.started = null
         this.ended = null
 
-        this.Emitter.clearBefore('press')
+        this.Emitter.clearAfter('press')
         this.Emitter.State.refresh()
     }
 

@@ -18,7 +18,7 @@ export default class Emitter {
         this.State = new State(events.state || {})
 
         this.initialData = { id, el, ato }
-        this.before = {}
+        this.after = {}
 
         this.detach('state')
     }
@@ -26,12 +26,13 @@ export default class Emitter {
     /**
      * Emette un evento se settato
      *
-     * @param {String} event Nome dell'evento da emettere
+     * @param {String} eventName Nome dell'evento da emettere
+     * @param {Event} event
      */
-    emit(event)
+    emit(eventName, event)
     {
-        if( Events.emit(event, this.data, this.events[event]) === false )
-            this.detach(event)
+        if( Events.emit(eventName, this.data, this.events[eventName], event) === false )
+            this.detach(eventName)
     }
 
     /**
@@ -41,11 +42,11 @@ export default class Emitter {
      * @param {Int}        delay Millisecondi da ritardare
      * @param {Callable?}  callback Funzione da chiamare dopo il delay
      */
-    emitBefore(event, delay, callback)
+    emitAfter(event, delay, callback)
     {
-        this.clearBefore(event)
+        this.clearAfter(event)
 
-        this.before[event] = window.setTimeout(() => {
+        this.after[event] = window.setTimeout(() => {
             this.emit(event)
             callback && callback()
         }, delay)
@@ -56,14 +57,14 @@ export default class Emitter {
      *
      * @param {String?} event Nome dell'evento da rimuovere. Se non settato, verranno rimossi tutti.
      */
-    clearBefore(event)
+    clearAfter(event)
     {
         if( typeof event === 'undefined' )
-            Object.keys(this.before).forEach(e => this.clearBefore(e))
+            Object.keys(this.after).forEach(e => this.clearAfter(e))
         else {
-            this.before[event] && window.clearTimeout(this.before[event])
-            this.before[event] = null
-            delete this.before[event]
+            this.after[event] && window.clearTimeout(this.after[event])
+            this.after[event] = null
+            delete this.after[event]
         }
     }
 

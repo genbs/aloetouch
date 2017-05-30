@@ -20,9 +20,10 @@ export default  {
     /**
      * Richiama gli altri eventi
      */
-    emit(event, values, callback)
+    emit(event, values, callback, nativeEvent)
     {
-        if( events.indexOf(event) >= 0 && this[event] && callback ) {
+        if (events.indexOf(event) >= 0 && this[event] && callback) {
+            values.$event = nativeEvent
             let result = this[event](values, callback)
             return result === false ? false: true
         }

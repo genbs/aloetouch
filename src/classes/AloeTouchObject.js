@@ -77,7 +77,7 @@ export default class AloeTouchObject {
                 event.stopImmediatePropagation()
             }
 
-            this.Dispatcher.dispatch()
+            this.Dispatcher.dispatch(null, event)
         } else {
             this.Dispatcher.clear()
         }
@@ -103,9 +103,9 @@ export default class AloeTouchObject {
     /**
      * Termino l'evento
      */
-    finish()
+    finish(event)
     {
-        !this.locked && this.Dispatcher.isStarted() && this.Dispatcher.dispatch(true)
+        !this.locked && this.Dispatcher.isStarted() && this.Dispatcher.dispatch(true, event)
     }
 
     /**
