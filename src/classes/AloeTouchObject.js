@@ -145,7 +145,7 @@ export default class AloeTouchObject {
         if( this.locked ) {
             this.on('touchstart', this.start, true)
             this.on('touchmove', this.move)
-            this.on('touchend touchcancel', this.finish, true)
+            this.on('touchend touchleave touchcancel', this.finish, true)
             this.locked = false
         }
     }
