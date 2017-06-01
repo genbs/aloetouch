@@ -25,7 +25,7 @@ export default  {
         if (events.indexOf(event) >= 0 && this[event] && callback) {
             values.$event = nativeEvent
             let result = this[event](values, callback)
-            return result === false ? false: true
+            return result === false ? false : true
         }
     },
 

@@ -324,6 +324,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var DEFAULT_SETTINGS = {
     strict: false,
     stopPropagation: false,
+    minMoveTime: _constants.ALOETOUCH_MIN_TIME,
     onlyX: false,
     onlyY: false
 };
@@ -407,7 +408,7 @@ var AloeTouchObject = function () {
     }, {
         key: 'isPermissible',
         value: function isPermissible(event) {
-            var time = Date.now() - this.Dispatcher.started.time;
+            var time = this.settings.minMoveTime ? Date.now() - this.Dispatcher.started.time : 1;
             var _isHorizontal = (0, _Utils.isHorizontal)(this.Dispatcher.started, this.Dispatcher.ended);
             var _isVertical = (0, _Utils.isVertical)(this.Dispatcher.started, this.Dispatcher.ended);
 
@@ -613,13 +614,15 @@ var Dispatcher = function () {
             if (_fingers) {
                 this.Emitter.prepare(this.started);
                 this.Emitter.emitAfter('press', _constants.ALOETOUCH_PRESS_MIN_TIME);
-                this.Emitter.emit('start', event);
+                if (this.Emitter.emit('start', event) === false) {
+                    this.clear();
+                } else {
+                    _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
 
-                _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
-
-                if (stopPropagation) {
-                    event.stopPropagation();
-                    event.stopImmediatePropagation();
+                    if (stopPropagation) {
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                    }
                 }
             }
         }
@@ -809,7 +812,9 @@ var Emitter = function () {
     _createClass(Emitter, [{
         key: 'emit',
         value: function emit(eventName, event) {
-            if (_Events2.default.emit(eventName, this.data, this.events[eventName], event) === false) this.detach(eventName);
+            var result = _Events2.default.emit(eventName, this.data, this.events[eventName], event) === false;
+            result && this.detach(eventName);
+            return result;
         }
 
         /**

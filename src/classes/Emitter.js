@@ -31,8 +31,9 @@ export default class Emitter {
      */
     emit(eventName, event)
     {
-        if( Events.emit(eventName, this.data, this.events[eventName], event) === false )
-            this.detach(eventName)
+        const result = Events.emit(eventName, this.data, this.events[eventName], event) === false
+        result && this.detach(eventName)
+        return result
     }
 
     /**
