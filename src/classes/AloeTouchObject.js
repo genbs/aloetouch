@@ -10,6 +10,7 @@ import Dispatcher from './Dispatcher'
 const DEFAULT_SETTINGS = {
     strict: false,
     stopPropagation: false,
+    minMoveTime: ALOETOUCH_MIN_TIME,
     onlyX: false,
     onlyY: false
 }
@@ -89,7 +90,7 @@ export default class AloeTouchObject {
      */
     isPermissible(event)
     {
-        let time = Date.now() - this.Dispatcher.started.time
+        let time = this.settings.minMoveTime ? Date.now() - this.Dispatcher.started.time : 1
         let _isHorizontal = isHorizontal(this.Dispatcher.started, this.Dispatcher.ended)
         let _isVertical = isVertical(this.Dispatcher.started, this.Dispatcher.ended)
 
