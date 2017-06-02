@@ -813,7 +813,8 @@ var Emitter = function () {
         key: 'emit',
         value: function emit(eventName, event) {
             var result = _Events2.default.emit(eventName, this.data, this.events[eventName], event) === false;
-            result && this.detach(eventName);
+            if (result === true) this.detach(eventName);
+
             return result;
         }
 
@@ -1124,8 +1125,7 @@ exports.default = {
   emit: function emit(event, values, callback, nativeEvent) {
     if (events.indexOf(event) >= 0 && this[event] && callback) {
       values.$event = nativeEvent;
-      var result = this[event](values, callback);
-      return result === false ? false : true;
+      return this[event](values, callback);
     }
   },
 

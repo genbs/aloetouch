@@ -32,7 +32,9 @@ export default class Emitter {
     emit(eventName, event)
     {
         const result = Events.emit(eventName, this.data, this.events[eventName], event) === false
-        result && this.detach(eventName)
+        if (result === true)
+            this.detach(eventName)
+        
         return result
     }
 
