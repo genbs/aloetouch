@@ -324,7 +324,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var DEFAULT_SETTINGS = {
     strict: false,
     stopPropagation: false,
-    minMoveTime: _constants.ALOETOUCH_MIN_TIME,
+    isPermissible: null,
     onlyX: false,
     onlyY: false
 };
@@ -408,11 +408,15 @@ var AloeTouchObject = function () {
     }, {
         key: 'isPermissible',
         value: function isPermissible(event) {
-            var time = this.settings.minMoveTime ? Date.now() - this.Dispatcher.started.time : 1;
-            var _isHorizontal = (0, _Utils.isHorizontal)(this.Dispatcher.started, this.Dispatcher.ended);
-            var _isVertical = (0, _Utils.isVertical)(this.Dispatcher.started, this.Dispatcher.ended);
+            var _this = this;
 
-            return event.cancelable && (!this.settings.onlyX && !this.settings.onlyY && time > _constants.ALOETOUCH_MIN_TIME || _isHorizontal || this.settings.onlyX && _isHorizontal || this.settings.onlyY && _isVertical);
+            return this.settings.isPermissible ? this.settings.isPermissible(event, (0, _Utils.coords)(this.Dispatcher.started, this.Dispatcher.ended), this.Dispatcher.started, this.Dispatcher.ended) : function () {
+                var time = Date.now() - _this.Dispatcher.started.time;
+                var _isHorizontal = (0, _Utils.isHorizontal)(_this.Dispatcher.started, _this.Dispatcher.ended);
+                var _isVertical = (0, _Utils.isVertical)(_this.Dispatcher.started, _this.Dispatcher.ended);
+
+                return event.cancelable && (!_this.settings.onlyX && !_this.settings.onlyY && time > _constants.ALOETOUCH_MIN_TIME || _isHorizontal || _this.settings.onlyX && _isHorizontal || _this.settings.onlyY && _isVertical);
+            };
         }
 
         /**
@@ -481,10 +485,10 @@ var AloeTouchObject = function () {
     }, {
         key: 'on',
         value: function on(events, handler, passive) {
-            var _this = this;
+            var _this2 = this;
 
             events.split(' ').forEach(function (e) {
-                return _this.el.addEventListener(e, handler, passive ? { passive: true } : true);
+                return _this2.el.addEventListener(e, handler, passive ? { passive: true } : true);
             });
         }
 
@@ -495,10 +499,10 @@ var AloeTouchObject = function () {
     }, {
         key: 'off',
         value: function off(events, handler) {
-            var _this2 = this;
+            var _this3 = this;
 
             events.split(' ').forEach(function (e) {
-                return _this2.el.removeEventListener(e, handler, true);
+                return _this3.el.removeEventListener(e, handler, true);
             });
         }
 
@@ -614,17 +618,13 @@ var Dispatcher = function () {
             if (_fingers) {
                 this.Emitter.prepare(this.started);
                 this.Emitter.emitAfter('press', _constants.ALOETOUCH_PRESS_MIN_TIME);
-                var asd = this.Emitter.emit('start', event);
-                console.log('asd', asd);
-                if (asd === false) {
-                    this.clear();
-                } else {
-                    _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
+                this.Emitter.emit('start', event);
 
-                    if (stopPropagation) {
-                        event.stopPropagation();
-                        event.stopImmediatePropagation();
-                    }
+                _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
+
+                if (stopPropagation) {
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
                 }
             }
         }
@@ -814,12 +814,7 @@ var Emitter = function () {
     _createClass(Emitter, [{
         key: 'emit',
         value: function emit(eventName, event) {
-            var result = _Events2.default.emit(eventName, this.data, this.events[eventName], event) === false;
-            console.log('emit', eventName, result);
-            //if (result === true)
-            //this.detach(eventName)
-
-            return result;
+            if (_Events2.default.emit(eventName, this.data, this.events[eventName], event) === false) this.detach(eventName);
         }
 
         /**
@@ -1129,7 +1124,7 @@ exports.default = {
   emit: function emit(event, values, callback, nativeEvent) {
     if (events.indexOf(event) >= 0 && this[event] && callback) {
       values.$event = nativeEvent;
-      return this[event](values, callback);
+      return this[event](values, callback) === false ? false : true;
     }
   },
 
@@ -1309,6 +1304,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * AloeTouch
  */
 var AloeTouch = {
+
+  /**
+   * Version
+   *
+   * @type {String}
+   */
+  version: '0.0.0-beta.02',
 
   /**
    * Contiene il numero di elementi

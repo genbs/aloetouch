@@ -6,6 +6,13 @@ import AloeTouchObject from './classes/AloeTouchObject'
 let AloeTouch = {
 
     /**
+     * Version
+     *
+     * @type {String}
+     */
+    version: '0.0.0-beta.02',
+
+    /**
      * Contiene il numero di elementi
      *
      * @type {Number}

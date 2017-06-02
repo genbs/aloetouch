@@ -35,17 +35,13 @@ export default class Dispatcher {
         if( _fingers ) {
             this.Emitter.prepare(this.started)
             this.Emitter.emitAfter('press', ALOETOUCH_PRESS_MIN_TIME)
-            const asd = this.Emitter.emit('start', event)
-            console.log('asd', asd)
-            if (asd === false) {
-                this.clear()
-            } else {
-                _fingers > 1 && event.preventDefault() // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
-                
-                if (stopPropagation) {
-                    event.stopPropagation()
-                    event.stopImmediatePropagation()
-                }
+            this.Emitter.emit('start', event)
+            
+            _fingers > 1 && event.preventDefault() // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
+            
+            if (stopPropagation) {
+                event.stopPropagation()
+                event.stopImmediatePropagation()
             }
         }
     }

@@ -1,5 +1,5 @@
 import { ALOETOUCH_MIN_TIME } from '../services/constants'
-import { getTouches, isHorizontal, isVertical } from '../services/Utils'
+import { getTouches, isHorizontal, isVertical, coords } from '../services/Utils'
 
 import Dispatcher from './Dispatcher'
 
@@ -10,7 +10,7 @@ import Dispatcher from './Dispatcher'
 const DEFAULT_SETTINGS = {
     strict: false,
     stopPropagation: false,
-    minMoveTime: ALOETOUCH_MIN_TIME,
+    isPermissible: null,
     onlyX: false,
     onlyY: false
 }
@@ -90,15 +90,17 @@ export default class AloeTouchObject {
      */
     isPermissible(event)
     {
-        let time = this.settings.minMoveTime ? Date.now() - this.Dispatcher.started.time : 1
-        let _isHorizontal = isHorizontal(this.Dispatcher.started, this.Dispatcher.ended)
-        let _isVertical = isVertical(this.Dispatcher.started, this.Dispatcher.ended)
+        return this.settings.isPermissible ? this.settings.isPermissible(event, coords(this.Dispatcher.started, this.Dispatcher.ended), this.Dispatcher.started, this.Dispatcher.ended) : (() => {
+            let time = Date.now() - this.Dispatcher.started.time
+            let _isHorizontal = isHorizontal(this.Dispatcher.started, this.Dispatcher.ended)
+            let _isVertical = isVertical(this.Dispatcher.started, this.Dispatcher.ended)
 
-        return event.cancelable && (
-            ( ( !this.settings.onlyX && !this.settings.onlyY && time > ALOETOUCH_MIN_TIME ) || _isHorizontal ) ||
-            ( this.settings.onlyX && _isHorizontal ) ||
-            ( this.settings.onlyY && _isVertical )
-        )
+            return event.cancelable && (
+                ((!this.settings.onlyX && !this.settings.onlyY && time > ALOETOUCH_MIN_TIME) || _isHorizontal) ||
+                (this.settings.onlyX && _isHorizontal) ||
+                (this.settings.onlyY && _isVertical)
+            )
+        })
     }
 
     /**
