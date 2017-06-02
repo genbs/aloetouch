@@ -614,7 +614,9 @@ var Dispatcher = function () {
             if (_fingers) {
                 this.Emitter.prepare(this.started);
                 this.Emitter.emitAfter('press', _constants.ALOETOUCH_PRESS_MIN_TIME);
-                if (this.Emitter.emit('start', event) === false) {
+                var asd = this.Emitter.emit('start', event);
+                console.log('asd', asd);
+                if (asd === false) {
                     this.clear();
                 } else {
                     _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
@@ -813,6 +815,7 @@ var Emitter = function () {
         key: 'emit',
         value: function emit(eventName, event) {
             var result = _Events2.default.emit(eventName, this.data, this.events[eventName], event) === false;
+            console.log('emit', event, result);
             if (result === true) this.detach(eventName);
 
             return result;
