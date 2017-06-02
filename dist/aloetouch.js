@@ -815,7 +815,7 @@ var Emitter = function () {
         key: 'emit',
         value: function emit(eventName, event) {
             var result = _Events2.default.emit(eventName, this.data, this.events[eventName], event) === false;
-            console.log('emit', event, result);
+            console.log('emit', eventName, result);
             if (result === true) this.detach(eventName);
 
             return result;
