@@ -39,7 +39,7 @@ export default class Dispatcher {
             
             _fingers > 1 && event.preventDefault() // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
             
-            if (stopPropagation) {
+            if (_fingers > 1 && stopPropagation) {
                 event.stopPropagation()
                 event.stopImmediatePropagation()
             }
