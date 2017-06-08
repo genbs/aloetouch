@@ -620,11 +620,13 @@ var Dispatcher = function () {
                 this.Emitter.emitAfter('press', _constants.ALOETOUCH_PRESS_MIN_TIME);
                 this.Emitter.emit('start', event);
 
-                _fingers > 1 && event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
+                if (_fingers > 1) {
+                    event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
 
-                if (_fingers > 1 && stopPropagation) {
-                    event.stopPropagation();
-                    event.stopImmediatePropagation();
+                    if (stopPropagation) {
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                    }
                 }
             }
         }
@@ -1310,7 +1312,7 @@ var AloeTouch = {
    *
    * @type {String}
    */
-  version: '0.0.0-beta.02',
+  version: '0.0.0-beta.03',
 
   /**
    * Contiene il numero di elementi
