@@ -389,8 +389,12 @@ var AloeTouchObject = function () {
         value: function move(event) {
             if (!this.locked && this.Dispatcher.isStarted() && this.Dispatcher.end(event, (0, _Utils.getTouches)(event, this.el, this.settings.strict)) && this.isPermissible(event)) {
                 event.preventDefault();
-                if (this.settings.stopPropagation) {
+                if (this.settings.stopPropagation === true || this.settings.stopPropagation === 1) {
+                    console.log('stopPropagation', event);
                     event.stopPropagation();
+                }
+                if (this.settings.stopPropagation === true || this.settings.stopPropagation === 2) {
+                    console.log('stopImmediatePropagation', event);
                     event.stopImmediatePropagation();
                 }
 
@@ -624,6 +628,14 @@ var Dispatcher = function () {
                     event.preventDefault(); // Blocca lo scrolling nel caso in cui l'utente abbia toccato l'elemento con più di un dito
 
                     if (stopPropagation) {
+                        if (stopPropagation === true || stopPropagation === 1) {
+                            console.log('stopPropagation', event);
+                            event.stopPropagation();
+                        }
+                        if (stopPropagation === true || stopPropagation === 2) {
+                            console.log('stopImmediatePropagation', event);
+                            event.stopImmediatePropagation();
+                        }
                         event.stopPropagation();
                         event.stopImmediatePropagation();
                     }
