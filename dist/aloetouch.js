@@ -388,9 +388,9 @@ var AloeTouchObject = function () {
         key: 'move',
         value: function move(event) {
             if (!this.locked && this.Dispatcher.isStarted() && this.Dispatcher.end(event, (0, _Utils.getTouches)(event, this.el, this.settings.strict)) && this.isPermissible(event)) {
-                event.preventDefault();
                 if (this.settings.stopPropagation === true || this.settings.stopPropagation === 1) event.stopPropagation();
                 if (this.settings.stopPropagation === true || this.settings.stopPropagation === 2) event.stopImmediatePropagation();
+                event.preventDefault();
 
                 this.Dispatcher.dispatch(null, event);
             } else {
