@@ -73,8 +73,8 @@ export default class AloeTouchObject {
             this.isPermissible(event)
         ) {
             event.preventDefault()
-            (this.settings.stopPropagation === true || this.settings.stopPropagation === 1) && event.stopPropagation()
-            (this.settings.stopPropagation === true || this.settings.stopPropagation === 2) && event.stopImmediatePropagation()
+            if(this.settings.stopPropagation === true || this.settings.stopPropagation === 1) event.stopPropagation()
+            if(this.settings.stopPropagation === true || this.settings.stopPropagation === 2) event.stopImmediatePropagation()
 
             this.Dispatcher.dispatch(null, event)
         } else {
