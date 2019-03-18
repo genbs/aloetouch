@@ -98,7 +98,7 @@ export default class AloeTouchObject {
                 (this.settings.onlyX && _isHorizontal) ||
                 (this.settings.onlyY && _isVertical)
             )
-        })
+        })()
     }
 
     /**

@@ -9,7 +9,7 @@ export const ALOETOUCH_MIN_TIME = 100
  * Tempo minimo per bindare l'evento press
  * @type {Number}
  */
-export const ALOETOUCH_PRESS_MIN_TIME = 600
+export const ALOETOUCH_PRESS_MIN_TIME = 300
 
 /**
  * Distanza minima per bindare l'evento swipe[Direction]
@@ -18,7 +18,7 @@ export const ALOETOUCH_PRESS_MIN_TIME = 600
 export const ALOETOUCH_MIN_SWIPE_DISTANCE = 60
 
 /**
- * Distanza tra due Tap per bindare l'evento Double Tap
+ * Distanza massima tra due Tap per bindare l'evento Double Tap
  * @type {Number}
  */
-export const ALOETOUCH_DBL_TAP_TIME = 200
+export const ALOETOUCH_DBL_TAP_TIME = 300
