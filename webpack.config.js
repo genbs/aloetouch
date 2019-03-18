@@ -1,24 +1,18 @@
-const min = process.argv.indexOf('-p') >= 0;
-
-let config = {
+module.exports =  (env, argv) => ({
     entry: './src/AloeTouch.js',
     output: {
-        filename: './dist/aloetouch.js',
+        filename: argv.mode == 'production' ? './dist/aloetouch.min.js' : './dist/aloetouch.js',
         library: 'AloeTouch',
         libraryTarget: 'commonjs'
     },
     module: {
-        loaders: [{
-            test: /\.js$/,
-            exclude: /node_modules/,
-            loader: 'babel-loader'
-        }]
-    }
-}
-
-if(min) {
-    config.output.filename = './dist/aloetouch.min.js'
-    config.devtool = 'source-map'
-}
-
-module.exports = config
+        rules: [
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: ['babel-loader']
+            }
+        ]
+    },
+    devtool: argv.mode === 'development' ? 'source-map' : false
+})

@@ -2,41 +2,41 @@ exports["AloeTouch"] =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
+/******/ 		if(installedModules[moduleId]) {
 /******/ 			return installedModules[moduleId].exports;
-
+/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
 /******/ 			l: false,
 /******/ 			exports: {}
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// identity function for calling harmony imports with the correct context
 /******/ 	__webpack_require__.i = function(value) { return value; };
-
+/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -47,7 +47,7 @@ exports["AloeTouch"] =
 /******/ 			});
 /******/ 		}
 /******/ 	};
-
+/******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
 /******/ 	__webpack_require__.n = function(module) {
 /******/ 		var getter = module && module.__esModule ?
@@ -56,15 +56,15 @@ exports["AloeTouch"] =
 /******/ 		__webpack_require__.d(getter, 'a', getter);
 /******/ 		return getter;
 /******/ 	};
-
+/******/
 /******/ 	// Object.prototype.hasOwnProperty.call
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -278,7 +278,7 @@ var ALOETOUCH_MIN_TIME = exports.ALOETOUCH_MIN_TIME = 100;
  * Tempo minimo per bindare l'evento press
  * @type {Number}
  */
-var ALOETOUCH_PRESS_MIN_TIME = exports.ALOETOUCH_PRESS_MIN_TIME = 600;
+var ALOETOUCH_PRESS_MIN_TIME = exports.ALOETOUCH_PRESS_MIN_TIME = 300;
 
 /**
  * Distanza minima per bindare l'evento swipe[Direction]
@@ -287,10 +287,10 @@ var ALOETOUCH_PRESS_MIN_TIME = exports.ALOETOUCH_PRESS_MIN_TIME = 600;
 var ALOETOUCH_MIN_SWIPE_DISTANCE = exports.ALOETOUCH_MIN_SWIPE_DISTANCE = 60;
 
 /**
- * Distanza tra due Tap per bindare l'evento Double Tap
+ * Distanza massima tra due Tap per bindare l'evento Double Tap
  * @type {Number}
  */
-var ALOETOUCH_DBL_TAP_TIME = exports.ALOETOUCH_DBL_TAP_TIME = 200;
+var ALOETOUCH_DBL_TAP_TIME = exports.ALOETOUCH_DBL_TAP_TIME = 300;
 
 /***/ }),
 /* 2 */
@@ -309,7 +309,7 @@ var _constants = __webpack_require__(1);
 
 var _Utils = __webpack_require__(0);
 
-var _Dispatcher = __webpack_require__(3);
+var _Dispatcher = __webpack_require__(4);
 
 var _Dispatcher2 = _interopRequireDefault(_Dispatcher);
 
@@ -327,18 +327,17 @@ var DEFAULT_SETTINGS = {
     isPermissible: null,
     onlyX: false,
     onlyY: false
+
+    /**
+     * Assegna gli eventi touch ad un elemento
+     *
+     * GLi eventi disponibili sono:
+     * Touch singolo
+     *     tap, dbltap, press, pan, swipe, swipeLeft, swipeRight, swipeTop, swipeBottom
+     * Touch doppio
+     *     pan2, pinch, rotate
+     */
 };
-
-/**
- * Assegna gli eventi touch ad un elemento
- *
- * GLi eventi disponibili sono:
- * Touch singolo
- *     tap, dbltap, press, pan, swipe, swipeLeft, swipeRight, swipeTop, swipeBottom
- * Touch doppio
- *     pan2, pinch, rotate
- */
-
 var AloeTouchObject = function () {
 
     /**
@@ -414,7 +413,7 @@ var AloeTouchObject = function () {
                 var _isVertical = (0, _Utils.isVertical)(_this.Dispatcher.started, _this.Dispatcher.ended);
 
                 return event.cancelable && (!_this.settings.onlyX && !_this.settings.onlyY && time > _constants.ALOETOUCH_MIN_TIME || _isHorizontal || _this.settings.onlyX && _isHorizontal || _this.settings.onlyY && _isVertical);
-            };
+            }();
         }
 
         /**
@@ -564,6 +563,202 @@ exports.default = AloeTouchObject;
 
 
 Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _AloeTouchObject = __webpack_require__(2);
+
+var _AloeTouchObject2 = _interopRequireDefault(_AloeTouchObject);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * AloeTouch
+ */
+var AloeTouch = {
+
+  /**
+   * Version
+   *
+   * @type {String}
+   */
+  version: '0.0.1',
+
+  /**
+   * Contiene il numero di elementi
+   *
+   * @type {Number}
+   */
+  increment: 0,
+
+  /**
+   * Lista degli AloeTouchObject
+   *
+   * @type {Object}
+   */
+  list: {},
+
+  /**
+   * Binda un nuovo elemento
+   *
+   * @param {DOMElement} element Elemento da bindare
+   * @param {Object}     events  Eventi da assegnare all'elemento
+   * @param {Object}    settings Impostazioni per l'ATO
+   */
+  bind: function bind(element, events, settings) {
+    var id = ++AloeTouch.increment;
+
+    var ato = new _AloeTouchObject2.default(id, element, events, settings).public;
+    ato.el.setAttribute('aloetouch-data-id', id);
+
+    return AloeTouch.list[id] = ato;
+  },
+
+
+  /**
+   * Rimuove i listener ad un elemento
+   *
+   * @param {AloeTouchObject or Numer} aloetouchobject
+   * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
+   */
+  unbind: function unbind(aloetouchobject) {
+    var id = aloetouchobject.nodeType ? aloetouchobject.getAttribute('aloetouch-data-id') : this.getIds(aloetouchobject, true);
+
+    if (id) {
+      AloeTouch.list[id].lock();
+      delete AloeTouch.list[id].$ref;
+      delete AloeTouch.list[id];
+      return true;
+    }
+
+    return false;
+  },
+
+
+  /**
+   * Ritorna un elemento in base al suo id
+   *
+   * @param {Number} id
+   */
+  get: function get(id) {
+    return AloeTouch.list.hasOwnProperty(id) ? AloeTouch.list[id] : null;
+  },
+
+
+  /**
+   * Ritorna un' array di id
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   * @param {Boolean} first Ritorna un id se l'array ha lunghezza pari a uno
+   * @return {Array<Number> or Number}
+   */
+  getIds: function getIds(aloetouchobjects, first) {
+    aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects];
+    aloetouchobjects = aloetouchobjects.map(function (ato) {
+      return typeof ato === 'number' ? AloeTouch.get(ato) ? ato : null : ato.$ref ? ato.$id : null;
+    });
+    aloetouchobjects = aloetouchobjects.filter(function (id) {
+      return !!id;
+    });
+
+    return first ? aloetouchobjects[0] : aloetouchobjects;
+  },
+
+
+  /**
+   * Blocca un oggetto singolo o tutti
+   *
+   * @param {Number?} id Blocca gli eventi per l'oggetto con id 'id'
+   */
+  lock: function lock(id) {
+    id ? AloeTouch.list[id].lock() : AloeTouch.map(function (ato) {
+      return ato.lock();
+    });
+  },
+
+
+  /**
+   *  Blocca tutti gli oggetti tranne quelli presenti nell'array ids
+   *
+   * @param {Array<AloeTouchObject or Number>} ids
+   */
+  lockExcept: function lockExcept(ids) {
+    ids = this.getIds(ids) || [];
+
+    AloeTouch.map(function (ato, id) {
+      return ato[ids.indexOf(id) == -1 ? 'unlock' : 'lock']();
+    });
+  },
+
+
+  /**
+   * Blocca solo gli oggetti presenti in ids
+   *
+   * @param {Array<AloeTouchObject or Number>} ids
+   */
+  lockOnly: function lockOnly(ids) {
+    ids = this.getIds(ids) || [];
+
+    AloeTouch.map(function (ato, id) {
+      return ato[ids.indexOf(id) >= 0 ? 'lock' : 'unlock']();
+    });
+  },
+
+
+  /**
+   * Abilita li eventi ad un oggetto singolo o tutti
+   *
+   * @param {Number?} id
+   */
+  unlock: function unlock(id) {
+    id ? AloeTouch.list[id].unlock() : AloeTouch.map(function (ato) {
+      return ato.unlock();
+    });
+  },
+
+
+  /**
+   * Abilita gli eventi tranne agli elementi presenti nell'array aloetouchobjects
+   *
+   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
+   */
+  unlockExcept: function unlockExcept(aloetouchobjects) {
+    AloeTouch.lockOnly(aloetouchobjects);
+  },
+
+
+  /**
+   * Abilita gli eventi solo agli elementi presenti nell'array ids
+   *
+   * @param {Array<AloeTouchObject or Number>} ids
+   */
+  unlockOnly: function unlockOnly(ids) {
+    AloeTouch.lockExcept(ids);
+  },
+
+
+  /**
+   * Mappa tutti li elementi bindati
+   *
+   * @param {Callable(AloeTouchObject, id)}
+   */
+  map: function map(callable) {
+    Object.keys(AloeTouch.list).forEach(function (id) {
+      return callable(AloeTouch.list[id], id);
+    });
+  }
+};
+
+exports.default = AloeTouch;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
@@ -573,7 +768,7 @@ var _constants = __webpack_require__(1);
 
 var _Utils = __webpack_require__(0);
 
-var _Emitter = __webpack_require__(4);
+var _Emitter = __webpack_require__(5);
 
 var _Emitter2 = _interopRequireDefault(_Emitter);
 
@@ -755,7 +950,7 @@ var Dispatcher = function () {
 exports.default = Dispatcher;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -769,11 +964,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _Utils = __webpack_require__(0);
 
-var _Events = __webpack_require__(6);
+var _Events = __webpack_require__(7);
 
 var _Events2 = _interopRequireDefault(_Events);
 
-var _State = __webpack_require__(5);
+var _State = __webpack_require__(6);
 
 var _State2 = _interopRequireDefault(_State);
 
@@ -923,7 +1118,7 @@ var Emitter = function () {
 exports.default = Emitter;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1089,7 +1284,7 @@ var State = function () {
 exports.default = State;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1282,202 +1477,6 @@ exports.default = {
     return callback(values.rotation, values);
   }
 };
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _AloeTouchObject = __webpack_require__(2);
-
-var _AloeTouchObject2 = _interopRequireDefault(_AloeTouchObject);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * AloeTouch
- */
-var AloeTouch = {
-
-  /**
-   * Version
-   *
-   * @type {String}
-   */
-  version: '0.0.0-beta.03',
-
-  /**
-   * Contiene il numero di elementi
-   *
-   * @type {Number}
-   */
-  increment: 0,
-
-  /**
-   * Lista degli AloeTouchObject
-   *
-   * @type {Object}
-   */
-  list: {},
-
-  /**
-   * Binda un nuovo elemento
-   *
-   * @param {DOMElement} element Elemento da bindare
-   * @param {Object}     events  Eventi da assegnare all'elemento
-   * @param {Object}    settings Impostazioni per l'ATO
-   */
-  bind: function bind(element, events, settings) {
-    var id = ++AloeTouch.increment;
-
-    var ato = new _AloeTouchObject2.default(id, element, events, settings).public;
-    ato.el.setAttribute('aloetouch-data-id', id);
-
-    return AloeTouch.list[id] = ato;
-  },
-
-
-  /**
-   * Rimuove i listener ad un elemento
-   *
-   * @param {AloeTouchObject or Numer} aloetouchobject
-   * @return {Boolean} true se l'elemento è stato rimosso, falso altrimenti
-   */
-  unbind: function unbind(aloetouchobject) {
-    var id = aloetouchobject.nodeType ? aloetouchobject.getAttribute('aloetouch-data-id') : this.getIds(aloetouchobject, true);
-
-    if (id) {
-      AloeTouch.list[id].lock();
-      delete AloeTouch.list[id].$ref;
-      delete AloeTouch.list[id];
-      return true;
-    }
-
-    return false;
-  },
-
-
-  /**
-   * Ritorna un elemento in base al suo id
-   *
-   * @param {Number} id
-   */
-  get: function get(id) {
-    return AloeTouch.list.hasOwnProperty(id) ? AloeTouch.list[id] : null;
-  },
-
-
-  /**
-   * Ritorna un' array di id
-   *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
-   * @param {Boolean} first Ritorna un id se l'array ha lunghezza pari a uno
-   * @return {Array<Number> or Number}
-   */
-  getIds: function getIds(aloetouchobjects, first) {
-    aloetouchobjects = aloetouchobjects.constructor.name === 'Array' ? aloetouchobjects : [aloetouchobjects];
-    aloetouchobjects = aloetouchobjects.map(function (ato) {
-      return typeof ato === 'number' ? AloeTouch.get(ato) ? ato : null : ato.$ref ? ato.$id : null;
-    });
-    aloetouchobjects = aloetouchobjects.filter(function (id) {
-      return !!id;
-    });
-
-    return first ? aloetouchobjects[0] : aloetouchobjects;
-  },
-
-
-  /**
-   * Blocca un oggetto singolo o tutti
-   *
-   * @param {Number?} id Blocca gli eventi per l'oggetto con id 'id'
-   */
-  lock: function lock(id) {
-    id ? AloeTouch.list[id].lock() : AloeTouch.map(function (ato) {
-      return ato.lock();
-    });
-  },
-
-
-  /**
-   *  Blocca tutti gli oggetti tranne quelli presenti nell'array ids
-   *
-   * @param {Array<AloeTouchObject or Number>} ids
-   */
-  lockExcept: function lockExcept(ids) {
-    ids = this.getIds(ids) || [];
-
-    AloeTouch.map(function (ato, id) {
-      return ato[ids.indexOf(id) == -1 ? 'unlock' : 'lock']();
-    });
-  },
-
-
-  /**
-   * Blocca solo gli oggetti presenti in ids
-   *
-   * @param {Array<AloeTouchObject or Number>} ids
-   */
-  lockOnly: function lockOnly(ids) {
-    ids = this.getIds(ids) || [];
-
-    AloeTouch.map(function (ato, id) {
-      return ato[ids.indexOf(id) >= 0 ? 'lock' : 'unlock']();
-    });
-  },
-
-
-  /**
-   * Abilita li eventi ad un oggetto singolo o tutti
-   *
-   * @param {Number?} id
-   */
-  unlock: function unlock(id) {
-    id ? AloeTouch.list[id].unlock() : AloeTouch.map(function (ato) {
-      return ato.unlock();
-    });
-  },
-
-
-  /**
-   * Abilita gli eventi tranne agli elementi presenti nell'array aloetouchobjects
-   *
-   * @param {Array<AloeTouchObject or Number>} aloetouchobjects
-   */
-  unlockExcept: function unlockExcept(aloetouchobjects) {
-    AloeTouch.lockOnly(aloetouchobjects);
-  },
-
-
-  /**
-   * Abilita gli eventi solo agli elementi presenti nell'array ids
-   *
-   * @param {Array<AloeTouchObject or Number>} ids
-   */
-  unlockOnly: function unlockOnly(ids) {
-    AloeTouch.lockExcept(ids);
-  },
-
-
-  /**
-   * Mappa tutti li elementi bindati
-   *
-   * @param {Callable(AloeTouchObject, id)}
-   */
-  map: function map(callable) {
-    Object.keys(AloeTouch.list).forEach(function (id) {
-      return callable(AloeTouch.list[id], id);
-    });
-  }
-};
-
-exports.default = AloeTouch;
 
 /***/ })
 /******/ ]);

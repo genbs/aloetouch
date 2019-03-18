@@ -4,7 +4,7 @@
   "description": "JS library for touch event",
   "main": "./index.js",
   "scripts": {
-    "build": "webpack && webpack -p",
+    "build": "webpack --mode=development && webpack --mode=production",
     "watch": "webpack --watch",
     "prepublish": "npm run build"
   },
@@ -25,10 +25,10 @@
   },
   "homepage": "https://github.com/genbs/aloetouch#readme",
   "devDependencies": {
-    "babel-cli": "^6.23.0",
-    "babel-core": "^6.23.1",
-    "babel-loader": "^6.3.2",
-    "babel-preset-es2015": "^6.22.0",
-    "webpack": "^2.2.1"
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "babel-loader": "^8.0.5",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0"
   }
 }
