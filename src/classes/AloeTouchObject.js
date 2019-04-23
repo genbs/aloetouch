@@ -132,7 +132,7 @@ export default class AloeTouchObject {
     {
         if( !this.locked ) {
             this.off('touchstart', this.start, true)
-            this.off('touchmove', this.move)
+            this.off('touchmove', this.move, true)
             this.off('touchend touchcancel', this.finish, true)
             this.locked = true
         }
@@ -144,7 +144,7 @@ export default class AloeTouchObject {
     unlock()
     {
         if( this.locked ) {
-            this.on('touchstart', this.start, true)
+            this.on('touchstart', this.start)
             this.on('touchmove', this.move)
             this.on('touchend touchleave touchcancel', this.finish, true)
             this.locked = false
@@ -181,14 +181,14 @@ export default class AloeTouchObject {
             attach(events){ ato.Dispatcher.Emitter.attach(events) },
             detach(events){ ato.Dispatcher.Emitter.detach(events) },
 
-            getState(){ ato.Dispatcher.Emitter.State.get() },
+            getState: () => ato.Dispatcher.Emitter.State.get(),
             clearState(){ ato.Dispatcher.Emitter.State.clear() },
             addState(state){ ato.Dispatcher.Emitter.State.add(state) },
             removeState(name){ ato.Dispatcher.Emitter.State.remove(name) },
 
             lock(){ ato.lock() },
             unlock(){ ato.unlock() },
-            isLock(){ return ato.isLock() },
+            isLock: () => ato.isLock(),
 
             $ref: this
         }

@@ -25,8 +25,8 @@ export default class Dispatcher {
      */
     start(event, touches, stopPropagation)
     {
-        if (!event.cancelable)
-            return this.clear()
+        //if (!event.cancelable)
+            //return this.clear()
 
         !this.started ? ( this.started = { time: Date.now(), touches } ) : ( this.started.touches = touches )
 

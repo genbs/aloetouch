@@ -3,13 +3,13 @@
  * Utile a non prevenire lo scrolling
  * @type {Number}
  */
-export const ALOETOUCH_MIN_TIME = 100
+export const ALOETOUCH_MIN_TIME = 33
 
 /**
  * Tempo minimo per bindare l'evento press
  * @type {Number}
  */
-export const ALOETOUCH_PRESS_MIN_TIME = 300
+export const ALOETOUCH_PRESS_MIN_TIME = 600
 
 /**
  * Distanza minima per bindare l'evento swipe[Direction]
