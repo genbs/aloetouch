@@ -10,7 +10,7 @@ let AloeTouch = {
      *
      * @type {String}
      */
-    version: '0.0.3',
+    version: '1.0.1',
 
     /**
      * Contiene il numero di elementi
