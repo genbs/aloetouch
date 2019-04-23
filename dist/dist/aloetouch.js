@@ -108,7 +108,7 @@ var AloeTouch = {
    *
    * @type {String}
    */
-  version: '0.0.1',
+  version: '0.0.2',
 
   /**
    * Contiene il numero di elementi
@@ -414,7 +414,7 @@ function () {
     value: function lock() {
       if (!this.locked) {
         this.off('touchstart', this.start, true);
-        this.off('touchmove', this.move);
+        this.off('touchmove', this.move, true);
         this.off('touchend touchcancel', this.finish, true);
         this.locked = true;
       }
@@ -427,7 +427,7 @@ function () {
     key: "unlock",
     value: function unlock() {
       if (this.locked) {
-        this.on('touchstart', this.start, true);
+        this.on('touchstart', this.start);
         this.on('touchmove', this.move);
         this.on('touchend touchleave touchcancel', this.finish, true);
         this.locked = false;
@@ -479,7 +479,7 @@ function () {
           ato.Dispatcher.Emitter.detach(events);
         },
         getState: function getState() {
-          ato.Dispatcher.Emitter.State.get();
+          return ato.Dispatcher.Emitter.State.get();
         },
         clearState: function clearState() {
           ato.Dispatcher.Emitter.State.clear();
@@ -560,7 +560,8 @@ function () {
   _createClass(Dispatcher, [{
     key: "start",
     value: function start(event, touches, stopPropagation) {
-      if (!event.cancelable) return this.clear();
+      //if (!event.cancelable)
+      //return this.clear()
       !this.started ? this.started = {
         time: Date.now(),
         touches: touches
@@ -1429,13 +1430,13 @@ __webpack_require__.r(__webpack_exports__);
  * Utile a non prevenire lo scrolling
  * @type {Number}
  */
-var ALOETOUCH_MIN_TIME = 100;
+var ALOETOUCH_MIN_TIME = 33;
 /**
  * Tempo minimo per bindare l'evento press
  * @type {Number}
  */
 
-var ALOETOUCH_PRESS_MIN_TIME = 300;
+var ALOETOUCH_PRESS_MIN_TIME = 600;
 /**
  * Distanza minima per bindare l'evento swipe[Direction]
  * @type {Number}
